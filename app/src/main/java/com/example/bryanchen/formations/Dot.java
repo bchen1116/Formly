@@ -116,4 +116,10 @@ public class Dot implements Serializable{
         return length <= 2*diameter;
     }
 
+//    public boolean inBounds(float top, float bottom, float left, float right) {
+//        Boolean vertical = this.yLocation >= top && this.yLocation <= bottom;
+//        Boolean horizontal = this.xLocation >= left && this.xLocation <= right;
+//        return vertical && horizontal;
+//    }
+
 }

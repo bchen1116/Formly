@@ -32,6 +32,10 @@ import java.util.List;
 
 public class EditViewActivity extends AppCompatActivity {
     List<Dot> dots = new ArrayList<>();
+    float top = 300;
+    float bottom = 1800;
+    float left = 0;
+    float right = 1500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +75,12 @@ public class EditViewActivity extends AppCompatActivity {
 
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+            paint.setColor(Color.CYAN);
+            paint.setStrokeWidth(5);
+            paint.setStyle(Paint.Style.STROKE);
+            canvas.drawRect(left, top, right, bottom, paint);
             paint.setColor(Color.BLACK);
+            paint.setStyle(Paint.Style.FILL);
             for (Dot p : dots) {
                 canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
             }
@@ -107,21 +116,26 @@ public class EditViewActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_UP:
                     x = (Math.round(event.getX() / 50) * 50);
                     y = (Math.round(event.getY() / 50) * 50);
-                    for (Dot d : dots) {
-                        if (d.isHit(x, y)) {
-                            occupied = true;
-                            selectedDot = null;
-                            break;
+                    if (x<=right && x >=left && y<=bottom && y>=top) {
+                        for (Dot d : dots) {
+                            if (d.isHit(x, y)) {
+                                occupied = true;
+                                selectedDot = null;
+                                break;
+                            }
                         }
-                    }
-                    if (!occupied) {
-                        if (selectedDot != null) {
-                            selectedDot.setLocation(x, y);
-                            selectedDot = null;
-                            break;
+                        if (!occupied) {
+                            if (selectedDot != null) {
+                                selectedDot.setLocation(x, y);
+                                selectedDot = null;
+                                break;
+                            }
+                            Dot p = new Dot(x, y);
+                            dots.add(p);
                         }
-                        Dot p = new Dot(x, y);
-                        dots.add(p);
+                    } else {
+                        dots.remove(selectedDot);
+                        selectedDot = null;
                     }
                     break;
                 case MotionEvent.ACTION_CANCEL: {
