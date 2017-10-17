@@ -33,10 +33,9 @@ import java.util.List;
 public class EditViewActivity extends AppCompatActivity {
     ArrayList<Dot> dots = new ArrayList<>();
     float top = 300;
-    float bottom = 1800;
+    float bottom = 1500;
     float left = 0;
-    float right = 1500;
-//    int id;
+    float right = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,11 +152,6 @@ public class EditViewActivity extends AppCompatActivity {
         }
     }
 
-    public List<Dot> getDots(){
-        return dots;
-    }
-
-//    public void setCurrentID(int id) { this.id = id; }
 }
 
 

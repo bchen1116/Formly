@@ -1,22 +1,18 @@
 package com.example.bryanchen.formations;
 
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.view.View;
+import android.widget.Button;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
+import android.view.LayoutInflater;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import android.content.Intent;
@@ -26,12 +22,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     List<Dot> dots = null;
-//    private Paint paint = new Paint();
     static final int EDIT_DOTS_REQUEST = 12;
-    float top = 300;
-    float bottom = 1800;
-    float left = 0;
-    float right = 1500;
+
+    private int NUM_ITEMS = 0;
+    ArrayList<Fragment> fragList = new ArrayList<>();
+    android.support.v4.view.ViewPager mViewPager;
+    TabsPagerAdapter myAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,91 +36,57 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mViewPager = (android.support.v4.view.ViewPager) findViewById(R.id.pager);
+        myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
+        mViewPager.setAdapter(myAdapter);
 
+
+        // button to add people to the screen
         ImageButton addButton = (ImageButton) findViewById(R.id.addButton1);
 
         addButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(v.getContext(), EditViewActivity.class);
-//                dot = (ArrayList<Dot>) getIntent().getSerializableExtra("doList");
-//
+
                 startActivityForResult(intent, EDIT_DOTS_REQUEST);
 
             }
         });
-//        if (dot != null) {
-//            Canvas canvas = new Canvas();
-//            Paint paint = new Paint();
-//            paint.setStyle(Paint.Style.FILL);
-//            paint.setColor(Color.BLACK);
-//            for (Dot d : dot) {
-//                canvas.drawCircle(d.getX(), d.getY(), (float) d.getDiameter(), paint);
-//            }
-//        }
+
+        // button to add more slides to the activity
+        Button fragButton = (Button) findViewById(R.id.button);
+        fragButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
+                Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                NUM_ITEMS++;
+                addView(s);
+//                getSupportFragmentManager().beginTransaction().add(R.id.pager, myAdapter.getItem(myAdapter.getItemPosition(s))).commit();
+                myAdapter.notifyDataSetChanged();
+//                return;
+            }
+        });
     }
 
-//    private class DrawView extends View {
-//
-//        public DrawView(Context context) {
-//            super(context);
-//        }
-//
-//        protected void onDraw(Canvas canvas) {
-//            super.onDraw(canvas);
-//            Paint paint = new Paint();
-//            paint.setColor(Color.CYAN);
-//            canvas.drawRect(left, top, right, bottom, paint);
-//            paint.setColor(Color.BLACK);
-//            paint.setStyle(Paint.Style.FILL);
-//            for (Dot p : dots) {
-//                canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
-//            }
-//            invalidate();
-//        }
-//
-//    }
-    //        List<Dot> dots = new ArrayList<>();
-//    Dot selectedDot = null;
-
-
-
-//    protected void onDraw(Canvas canvas) {
-//        onDraw(canvas);
-//        paint.setColor(Color.CYAN);
-//        paint.setStrokeWidth(5);
-//        paint.setStyle(Paint.Style.STROKE);
-//        canvas.drawRect(left, top, right, bottom, paint);
-//        paint.setColor(Color.BLACK);
-//        paint.setStyle(Paint.Style.FILL);
-//        for (Dot p : dots) {
-//            canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
-//        }
-//        invalidate();
-//    }
-
-    /**
-     * Fragment
-     *      onStart()
-     *
-     *
-     *      whenever edit ends, update fragment
-     *      whenever we enter edit we can keep track of the ID of fragment we were viewing (if we were on one)
-     *      use that to know which fragment to update
-     *
-     */
 
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
         if (requestCode == EDIT_DOTS_REQUEST) {
             if (resultCode == RESULT_OK) {
                 dots = data.getParcelableArrayListExtra("DOTS");
-                Log.v("TAG", "added dots");
-                for (Dot p : dots) {
-                    Log.v("NEW", "one dot added with location x: " + p.getX() + ", and y: " + p.getY());
-                }
+//                Log.v("TAG", "added dots");
+//                for (Dot p : dots) {
+//                    Log.v("NEW", "one dot added with location x: " + p.getX() + ", and y: " + p.getY());
+//                }
             }
 
         }
+    }
+
+    public void addView(Fragment newPage) {
+        int pageIndex = myAdapter.addView(newPage);
+        // You might want to make "newPage" the currently displayed page:
+        mViewPager.setCurrentItem(pageIndex, true);
     }
 
     @Override
@@ -147,5 +109,58 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public List<Dot> getDots() {
+        return dots;
+    }
+
+
+
+
+
+    private class TabsPagerAdapter extends SmartFragmentStatePagerAdapter {
+        ArrayList<Fragment> mlist = new ArrayList<>();
+
+        public TabsPagerAdapter(FragmentManager fm) {
+            super(fm);
+//            setContentView(R.layout.activity_slide_screen);
+        }
+
+
+        public int addView(Fragment f) {
+            return myAdapter.addView(f, mlist.size());
+        }
+
+        public int addView(Fragment f, int position) {
+            mlist.add(position, f);
+            myAdapter.notifyDataSetChanged();
+            return position;
+        }
+
+        // Returns total number of pages
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+        @Override
+        public int getItemPosition(Object obj) {
+            Slidescreen o = (Slidescreen) obj;
+            for (int i = 0; i < getCount(); i++) {
+                if (mlist.get(i).equals(o)) {
+                    return i;
+                }
+            }
+            return POSITION_NONE;
+        }
+
+        // Returns the fragment to display for that page
+        @Override
+        public Fragment getItem(int position) {
+            return mlist.get(position);
+        }
+
+
     }
 }
