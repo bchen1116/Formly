@@ -31,11 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EditViewActivity extends AppCompatActivity {
-    List<Dot> dots = new ArrayList<>();
+    static List<Dot> dots = new ArrayList<>();
     float top = 300;
-    float bottom = 1800;
+    float bottom = 1500;
     float left = 0;
-    float right = 1500;
+    float right = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +147,7 @@ public class EditViewActivity extends AppCompatActivity {
         }
     }
 
-    public List<Dot> getDots(){
+    public static List<Dot> getDots(){
         return dots;
     }
 }
