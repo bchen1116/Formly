@@ -1,6 +1,7 @@
 package com.example.bryanchen.formations;
 
-
+import android.view.View;
+import android.widget.Button;
 import android.os.Bundle;
 
 import android.support.v4.app.Fragment;
@@ -9,12 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
 import android.view.LayoutInflater;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import android.content.Intent;
@@ -23,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    List<Dot> dot = null;
+    List<Dot> dots = null;
+    static final int EDIT_DOTS_REQUEST = 12;
+
     private int NUM_ITEMS = 0;
     ArrayList<Fragment> fragList = new ArrayList<>();
     android.support.v4.view.ViewPager mViewPager;
@@ -43,12 +43,14 @@ public class MainActivity extends AppCompatActivity {
 
         // button to add people to the screen
         ImageButton addButton = (ImageButton) findViewById(R.id.addButton1);
+
         addButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(v.getContext(), EditViewActivity.class);
 
-                startActivity(intent);
+                startActivityForResult(intent, EDIT_DOTS_REQUEST);
+
             }
         });
 
@@ -62,9 +64,23 @@ public class MainActivity extends AppCompatActivity {
                 addView(s);
 //                getSupportFragmentManager().beginTransaction().add(R.id.pager, myAdapter.getItem(myAdapter.getItemPosition(s))).commit();
                 myAdapter.notifyDataSetChanged();
-                return;
+//                return;
             }
         });
+    }
+
+
+    public void onActivityResult (int requestCode, int resultCode, Intent data) {
+        if (requestCode == EDIT_DOTS_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                dots = data.getParcelableArrayListExtra("DOTS");
+//                Log.v("TAG", "added dots");
+//                for (Dot p : dots) {
+//                    Log.v("NEW", "one dot added with location x: " + p.getX() + ", and y: " + p.getY());
+//                }
+            }
+
+        }
     }
 
     public void addView(Fragment newPage) {
@@ -94,6 +110,14 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public List<Dot> getDots() {
+        return dots;
+    }
+
+
+
+
 
     private class TabsPagerAdapter extends SmartFragmentStatePagerAdapter {
         ArrayList<Fragment> mlist = new ArrayList<>();
@@ -136,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             return mlist.get(position);
         }
+
 
     }
 }

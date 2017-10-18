@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EditViewActivity extends AppCompatActivity {
-    static List<Dot> dots = new ArrayList<>();
+    ArrayList<Dot> dots = new ArrayList<>();
     float top = 300;
     float bottom = 1500;
     float left = 0;
@@ -44,6 +44,7 @@ public class EditViewActivity extends AppCompatActivity {
 
         // create a viewGroup to use SingleTouchEventView on the activity_edit_view.xml
         ViewGroup mainView = (ViewGroup) findViewById(R.id.editLayout);
+
         // overlay the touchView on this xml
         SingleTouchEventView touch = new SingleTouchEventView(this.getApplicationContext());
         mainView.addView(touch);
@@ -57,6 +58,10 @@ public class EditViewActivity extends AppCompatActivity {
         doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
+                Intent data = new Intent();
+                data.putParcelableArrayListExtra("DOTS", dots);
+
+                setResult(RESULT_OK, data);
                 finish();
             }
         });
@@ -147,9 +152,6 @@ public class EditViewActivity extends AppCompatActivity {
         }
     }
 
-    public static List<Dot> getDots(){
-        return dots;
-    }
 }
 
 
