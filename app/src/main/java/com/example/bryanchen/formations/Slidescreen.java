@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import java.util.List;
 public class Slidescreen extends Fragment {
     private List<Dot> dots = new ArrayList<>();
     public int page;
+    ViewGroup rootView;
+    drawView s;
     public Slidescreen() {
         // Required empty public constructor
     }
@@ -28,21 +31,30 @@ public class Slidescreen extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(
+        rootView = (ViewGroup) inflater.inflate(
                 R.layout.fragment_slidescreen, container, false);
-        MainActivity main = (MainActivity) this.getActivity();
-        drawView draw = new drawView(main);
 
-        dots = main.getDots();
-        for (Dot p: dots) {
-            Log.v("FRAG_DOT", "new dot");
-        }
-
-//        rootView.addView(draw);
-        LinearLayout linearLayout = rootView.findViewById(R.id.textView);
-        linearLayout.addView(new drawView(getActivity()));
-//        text.setText(String.valueOf("Slide "+ this.getInt()+1));
+        s = new drawView(getActivity());
+        ViewGroup linear = (ViewGroup) rootView.findViewById(R.id.linear);
+        linear.addView(s);
         return rootView;
+    }
+
+    public ViewGroup setDots(List<Dot> d) {
+        dots = d;
+//        for (Dot f: dots) {
+//            Log.v("SET DOTS", "dotdotdot");
+//        }
+        return rootView;
+    }
+
+    public List<Dot> getDots() {
+        return dots;
+    }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("curChoice", page);
     }
 
     public Slidescreen newInstance(String key, int p) {
@@ -51,29 +63,37 @@ public class Slidescreen extends Fragment {
         args.putInt(key, p);
         fragment.setArguments(args);
         this.page = p;
+        onSaveInstanceState(args);
         return fragment;
     }
 
     public class drawView extends View {
         Paint paint = new Paint();
-        //        List<Dot> dots = new ArrayList<>();
 
         public drawView(Context context) {
             super(context);
+            this.setWillNotDraw(false);
+//            Log.v("AM I DRAWING?", ""+ context.toString());
+        }
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            setMeasuredDimension(1050, 1500);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
-            Log.v("DRAW", "plsplspls");
             super.onDraw(canvas);
+//            Log.v("DRAW", "plsplspls");
             paint.setColor(Color.CYAN);
             paint.setStrokeWidth(5);
             paint.setStyle(Paint.Style.STROKE);
-//            canvas.drawRect(left, top, right, bottom, paint);
+            canvas.drawRect(10, 30, 1000, 1200, paint);
             paint.setColor(Color.BLACK);
             paint.setStyle(Paint.Style.FILL);
-            for (Dot p : dots) {
-                canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
+            if (dots != null) {
+                for (Dot p : dots) {
+                    canvas.drawCircle(p.getX() * (53 / (float) 56), p.getY() * (11 / (float) 14), (float) p.getDiameter(), paint);
+                }
             }
             invalidate();
         }

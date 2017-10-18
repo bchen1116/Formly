@@ -32,13 +32,16 @@ import java.util.List;
 
 public class EditViewActivity extends AppCompatActivity {
     ArrayList<Dot> dots = new ArrayList<>();
-    float top = 300;
+    float top = 100;
     float bottom = 1500;
-    float left = 0;
-    float right = 1000;
+    float left = 20;
+    float right = 1050;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (getIntent().getParcelableArrayListExtra("DOTS") != null) {
+            dots = getIntent().getParcelableArrayListExtra("DOTS");
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_view);
 
@@ -50,9 +53,6 @@ public class EditViewActivity extends AppCompatActivity {
         mainView.addView(touch);
 
 
-        // Get the intent that started this activity
-//        Intent intent = getIntent();
-//        intent.putExtra("dotList", (Dot)dots);
         // exit on done button
         Button doneButton = (Button) findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
@@ -66,6 +66,11 @@ public class EditViewActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     public class SingleTouchEventView extends View {

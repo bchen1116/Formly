@@ -46,10 +46,20 @@ public class MainActivity extends AppCompatActivity {
 
         addButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(v.getContext(), EditViewActivity.class);
+                if (NUM_ITEMS > 0) {
+                    Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(v.getContext(), EditViewActivity.class);
+                    Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                    dots = f.getDots();
 
-                startActivityForResult(intent, EDIT_DOTS_REQUEST);
+                    if (dots != null) {
+                        intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
+                    }
+                    startActivityForResult(intent, EDIT_DOTS_REQUEST);
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Add a new page first!", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -60,11 +70,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
                 Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                s.setDots(dots);
                 NUM_ITEMS++;
                 addView(s);
-//                getSupportFragmentManager().beginTransaction().add(R.id.pager, myAdapter.getItem(myAdapter.getItemPosition(s))).commit();
                 myAdapter.notifyDataSetChanged();
-//                return;
             }
         });
     }
@@ -74,7 +83,11 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == EDIT_DOTS_REQUEST) {
             if (resultCode == RESULT_OK) {
                 dots = data.getParcelableArrayListExtra("DOTS");
-//                Log.v("TAG", "added dots");
+                Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                f.setDots(dots);
+                myAdapter.notifyDataSetChanged();
+
+//                Log.v("TAG", "added dots to page " + mViewPager.getCurrentItem());
 //                for (Dot p : dots) {
 //                    Log.v("NEW", "one dot added with location x: " + p.getX() + ", and y: " + p.getY());
 //                }
@@ -161,6 +174,8 @@ public class MainActivity extends AppCompatActivity {
             return mlist.get(position);
         }
 
-
+        public Fragment getCurrentFrag(int position) {
+            return mlist.get(position);
+        }
     }
 }
