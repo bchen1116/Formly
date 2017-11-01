@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#FF11FF</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorPrimary">#000090</color>
+    <string-array name="colors">
+        <item name="Silver">#C0C0C0</item>
+        <item name="Maroon">#800000</item>
+        <item name="Red">#FF0000</item>
+        <item name="Magenta">#FF4081</item>
+        <item name="Olive">#808000</item>
+        <item name="Yellow">#FFFF00</item>
+        <item name="Green">#008000</item>
+        <item name="Lime">#00FF00</item>
+        <item name="Teal">#008080</item>
+        <item name="Aqua">#00FFFF</item>
+        <item name="Blue">#0000FF</item>
+        <item name="Navy">#000080</item>
+        <item name="Purple">#800080</item>
+        <item name="Fuchsia">#FF00FF</item>
+    </string-array>
 </resources>

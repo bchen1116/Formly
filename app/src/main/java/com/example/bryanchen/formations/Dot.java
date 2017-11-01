@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 //import android.annotation.TargetApi;
 //import android.os.Build;
 import android.os.Parcel;
@@ -20,9 +21,12 @@ import android.support.v4.content.ContextCompat;
  */
 
 public class Dot implements Parcelable{
-    private String name;
+    static final AtomicLong NEXT_ID = new AtomicLong(0);
+    private long id = NEXT_ID.getAndIncrement();
+
+    public String name;
     private float xLocation, yLocation;
-    private Color color;
+    public int color;
     private double diameter;
     private final double DEFAULT_DIAMETER = 40;
 
@@ -31,7 +35,7 @@ public class Dot implements Parcelable{
         this.name = "";
         this.xLocation = x;
         this.yLocation = y;
-        this.color = new Color();
+        this.color = Color.GRAY;
         this.diameter = DEFAULT_DIAMETER;
 
     }
@@ -40,7 +44,9 @@ public class Dot implements Parcelable{
         this.name = in.readString();
         this.xLocation = Float.parseFloat(in.readString());
         this.yLocation = Float.parseFloat(in.readString());
+        this.color = Integer.parseInt(in.readString());
         this.diameter = Float.parseFloat(in.readString());
+        this.id = Long.parseLong(in.readString());
     }
     @Override
     public int describeContents() {
@@ -54,7 +60,9 @@ public class Dot implements Parcelable{
         dest.writeString(this.name);
         dest.writeString(String.valueOf(this.xLocation));
         dest.writeString(String.valueOf(this.yLocation));
+        dest.writeString(String.valueOf(this.color));
         dest.writeString(String.valueOf(this.diameter));
+        dest.writeString(String.valueOf(this.id));
 
     }
 
@@ -77,7 +85,7 @@ public class Dot implements Parcelable{
         this.yLocation = y;
     }
 
-    public void setColor(Color color) {
+    public void setColor(int color) {
         this.color = color;
     }
 
@@ -101,13 +109,15 @@ public class Dot implements Parcelable{
         return this.yLocation;
     }
 
-    public Color getColor() {
+    public int getColor() {
         return this.color;
     }
 
     public double getDiameter() {
         return this.diameter;
     }
+
+    public Long getID() {return this.id; }
 
     public boolean isHit(float x, float y) {
         float dx = x-this.getX();
@@ -116,6 +126,10 @@ public class Dot implements Parcelable{
         return length <= 2*diameter;
     }
 
+    @Override
+    public String toString(){
+        return this.name + " at location " + "(" + this.xLocation + ", " + this.yLocation + ")";
+    }
 //    public boolean inBounds(float top, float bottom, float left, float right) {
 //        Boolean vertical = this.yLocation >= top && this.yLocation <= bottom;
 //        Boolean horizontal = this.xLocation >= left && this.xLocation <= right;

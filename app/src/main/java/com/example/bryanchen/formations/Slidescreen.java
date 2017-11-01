@@ -48,6 +48,19 @@ public class Slidescreen extends Fragment {
         return rootView;
     }
 
+    public void updateDots(List<Dot> d) {
+        if (dots != null) {
+            for (Dot dot: d) {
+                for (Dot thisDot: dots) {
+                    if (thisDot.getID() == dot.getID()){
+                        thisDot.setName(dot.getName());
+//                        thisDot.setColor(dot.getColor());
+                    }
+                }
+            }
+        }
+    }
+
     public List<Dot> getDots() {
         return dots;
     }
@@ -69,6 +82,7 @@ public class Slidescreen extends Fragment {
 
     public class drawView extends View {
         Paint paint = new Paint();
+        private Paint textPaint = new Paint();
 
         public drawView(Context context) {
             super(context);
@@ -83,19 +97,32 @@ public class Slidescreen extends Fragment {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-//            Log.v("DRAW", "plsplspls");
             paint.setColor(Color.CYAN);
             paint.setStrokeWidth(5);
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawRect(10, 30, 1000, 1200, paint);
-            paint.setColor(Color.BLACK);
+
             paint.setStyle(Paint.Style.FILL);
+            textPaint.setColor(Color.BLACK);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+
             if (dots != null) {
                 for (Dot p : dots) {
-                    canvas.drawCircle(p.getX() * (53 / (float) 56), p.getY() * (11 / (float) 14), (float) p.getDiameter(), paint);
+                    Log.e("DOTS", p.toString() + " color " + p.getColor());
+                    paint.setColor(p.getColor());
+                    int size = p.getName().length();
+                    if (size > 0){
+                        textPaint.setTextSize(26 - 3*size/4);
+                    } else {
+                        textPaint.setTextSize(25f);
+                    }
+                    float xLoc = p.getX() * (53 / (float) 56);
+                    float yLoc = p.getY() * (11 / (float) 14);
+                    canvas.drawCircle(xLoc, yLoc, (float) p.getDiameter(), paint);
+                    canvas.drawText(p.getName(), xLoc, yLoc, textPaint);
                 }
+                invalidate();
             }
-            invalidate();
         }
     }
 

@@ -85,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
                 dots = data.getParcelableArrayListExtra("DOTS");
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
                 f.setDots(dots);
+                for (Fragment fr:  myAdapter.getFragment()) {
+                    Slidescreen frag = (Slidescreen) fr;
+                    frag.updateDots(dots);
+                }
                 myAdapter.notifyDataSetChanged();
 
 //                Log.v("TAG", "added dots to page " + mViewPager.getCurrentItem());
@@ -177,5 +181,7 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getCurrentFrag(int position) {
             return mlist.get(position);
         }
+
+        public ArrayList<Fragment> getFragment() { return mlist;}
     }
 }
