@@ -42,6 +42,32 @@ public class Dot implements Parcelable{
 
     }
 
+    public Dot(int color, int diameter, Long id, String name, boolean selected, float x, float y) {
+        this.name = name;
+        this.xLocation = x;
+        this.yLocation = y;
+        this.color = color;
+        this.diameter = diameter;
+        this.selected = selected;
+        this.id = id;
+    }
+
+    public Dot(Map<String, Object> data) {
+        Double x = (Double) data.get("x");
+        Double y = (Double) data.get("y");
+        Long c = (Long) data.get("color");
+        Double d = (Double) data.get("diameter");
+        Long id = (Long) data.get("id");
+
+        this.name = (String) data.get("name");
+        this.xLocation = x.floatValue();
+        this.yLocation = y.floatValue();
+        this.color = c.intValue();
+        this.diameter = d.doubleValue();
+        this.selected = (boolean) data.get("selected");
+        this.id = id.longValue();
+    }
+
     private Dot(Parcel in) {
         this.name = in.readString();
         this.xLocation = Float.parseFloat(in.readString());

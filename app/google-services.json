@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "715075610955",
+    "firebase_url": "https://formly-bcgd.firebaseio.com",
+    "project_id": "formly-bcgd",
+    "storage_bucket": "formly-bcgd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715075610955:android:a34c7aee42d0a510",
+        "android_client_info": {
+          "package_name": "com.example.bryanchen.formations"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "715075610955-md1v2sp8ank7ef21nurd7f58u5jvoehc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi3omvClyFRcTYZjgZCSdWPiq-_JK5x1Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
