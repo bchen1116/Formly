@@ -1,5 +1,6 @@
 package com.example.bryanchen.formations;
 
+import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.widget.Button;
 import android.os.Bundle;
@@ -14,11 +15,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
     List<Dot> dots = null;
@@ -27,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
     private int NUM_ITEMS = 0;
     ArrayList<Fragment> fragList = new ArrayList<>();
     android.support.v4.view.ViewPager mViewPager;
-    TabsPagerAdapter myAdapter;
+    public TabsPagerAdapter myAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            dots = savedInstanceState.getParcelableArrayList("DOTDOT");
+        }
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -40,34 +47,20 @@ public class MainActivity extends AppCompatActivity {
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(myAdapter);
 
-
-        // button to add people to the screen
-        ImageButton addButton = (ImageButton) findViewById(R.id.addButton1);
-
-        addButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (NUM_ITEMS > 0) {
-                    Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(v.getContext(), EditViewActivity.class);
-                    Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                    dots = f.getDots();
-
-                    if (dots != null) {
-                        intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
-                    }
-                    startActivityForResult(intent, EDIT_DOTS_REQUEST);
-                }
-                else {
-                    Toast.makeText(getApplicationContext(), "Add a new page first!", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-
+        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
+        if (NUM_ITEMS < 1){
+            Log.e("ARE WE IN", "DID SOMEHTING HAPPEN " + NUM_ITEMS);
+            Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+            addView(s);
+            NUM_ITEMS++;
+            Log.e("ARE WE IN", "DID SOMEHTING HAPPEN " + NUM_ITEMS);
+            myAdapter.notifyDataSetChanged();
+        }
         // button to add more slides to the activity
-        Button fragButton = (Button) findViewById(R.id.button);
+        FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button);
         fragButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+//                addButton.setVisibility(View.VISIBLE);
                 Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
                 Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
                 s.setDots(dots);
@@ -76,8 +69,30 @@ public class MainActivity extends AppCompatActivity {
                 myAdapter.notifyDataSetChanged();
             }
         });
+
+        // button to add people to the screen
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(v.getContext(), EditViewActivity.class);
+                Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                dots = f.getDots();
+
+                if (dots != null) {
+                    intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
+                }
+                startActivityForResult(intent, EDIT_DOTS_REQUEST);
+
+
+            }
+        });
     }
 
+    public void dotsUpdate(){
+        myAdapter.notifyDataSetChanged();
+    }
 
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
         if (requestCode == EDIT_DOTS_REQUEST) {
@@ -91,10 +106,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 myAdapter.notifyDataSetChanged();
 
-//                Log.v("TAG", "added dots to page " + mViewPager.getCurrentItem());
-//                for (Dot p : dots) {
-//                    Log.v("NEW", "one dot added with location x: " + p.getX() + ", and y: " + p.getY());
-//                }
             }
 
         }
@@ -132,9 +143,16 @@ public class MainActivity extends AppCompatActivity {
         return dots;
     }
 
-
-
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        ArrayList<List> allDots = new ArrayList<>();
+        for (Fragment i: myAdapter.getFragment()) {
+            Slidescreen newI = (Slidescreen) i;
+            allDots.add(newI.getDots());
+        }
+//        outState.putParcelableArrayList("DOTDOT", allDots);
+        super.onSaveInstanceState(outState);
+    }
 
     private class TabsPagerAdapter extends SmartFragmentStatePagerAdapter {
         ArrayList<Fragment> mlist = new ArrayList<>();

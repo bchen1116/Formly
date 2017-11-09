@@ -29,6 +29,7 @@ public class Dot implements Parcelable{
     public int color;
     private double diameter;
     private final double DEFAULT_DIAMETER = 40;
+    private boolean selected;
 
 
     public Dot(float x, float y) {
@@ -37,6 +38,7 @@ public class Dot implements Parcelable{
         this.yLocation = y;
         this.color = Color.GRAY;
         this.diameter = DEFAULT_DIAMETER;
+        selected = false;
 
     }
 
@@ -47,6 +49,7 @@ public class Dot implements Parcelable{
         this.color = Integer.parseInt(in.readString());
         this.diameter = Float.parseFloat(in.readString());
         this.id = Long.parseLong(in.readString());
+        this.selected = Boolean.parseBoolean(in.readString());
     }
     @Override
     public int describeContents() {
@@ -63,6 +66,7 @@ public class Dot implements Parcelable{
         dest.writeString(String.valueOf(this.color));
         dest.writeString(String.valueOf(this.diameter));
         dest.writeString(String.valueOf(this.id));
+        dest.writeString(String.valueOf(this.selected));
 
     }
 
@@ -97,6 +101,10 @@ public class Dot implements Parcelable{
         this.diameter = DEFAULT_DIAMETER;
     }
 
+    public void setSelected(boolean select) {
+        this.selected = select;
+    }
+
     public String getName() {
         return this.name;
     }
@@ -118,6 +126,8 @@ public class Dot implements Parcelable{
     }
 
     public Long getID() {return this.id; }
+
+    public boolean isSelected() { return this.selected;}
 
     public boolean isHit(float x, float y) {
         float dx = x-this.getX();
