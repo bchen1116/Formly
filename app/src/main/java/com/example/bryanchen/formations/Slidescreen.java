@@ -32,8 +32,9 @@ public class Slidescreen extends Fragment {
     public int page;
     ViewGroup rootView;
     drawView s;
-    private int EDITDOTS = 12;
-
+//    static final int EDIT_DOTS_REQUEST = 12;
+    MotionEvent e;
+    boolean hasMotion;
     // class member variable to save the X,Y coordinates
     private float[] lastTouchDownXY = new float[2];
     public Slidescreen() {
@@ -50,52 +51,52 @@ public class Slidescreen extends Fragment {
 
 
         // the purpose of the touch listener is just to store the touch X,Y coordinates
-//        s.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                Log.e("HAS BEEN TOUCHED", "TRUEEEEE");
-//                // save the X,Y coordinates
-//                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-//                    lastTouchDownXY[0] = event.getX();
-//                    lastTouchDownXY[1] = event.getY();
-//                }
-//
-//                // let the touch event pass on to whoever needs it
-//                return false;
-//            }
-//        });
-//
-//        s.setOnLongClickListener( new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//
-//                // retrieve the stored coordinates
-//                float x = lastTouchDownXY[0];
-//                float y = lastTouchDownXY[1];
-//                Dot selectedDot = null;
-//                Boolean hit = false;
-//                // use the coordinates to find the dot selected, if any
-//                if(dots.size()>0){
-//                    for (Dot d:dots) {
-//                        if (d.isHit(x*((float)56/53), y*((float)14/11))) {
-//                            hit = true;
-//                            dots = clearSelected(dots);
-//                            d.setSelected(true);
-//                        }
-//                    }
-//                }
-//                if (hit) {
-//                    Intent goingToEdit = new Intent(getContext(), EditViewActivity.class);
-//                    goingToEdit.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
-//                    startActivityForResult(goingToEdit, EDITDOTS);
-//                }
-//
-//                return hit;
-//            }
-//        });
+        s.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                hasMotion = false;
+                Log.e("HAS BEEN TOUCHED", "TRUEEEEE");
+                // save the X,Y coordinates
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    lastTouchDownXY[0] = event.getX();
+                    lastTouchDownXY[1] = event.getY();
+                }
+                // let the touch event pass on to whoever needs it
+                return false;
+            }
+        });
+
+        s.setOnLongClickListener( new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                hasMotion = true;
+                // retrieve the stored coordinates
+                float x = lastTouchDownXY[0];
+                float y = lastTouchDownXY[1];
+                Dot selectedDot = null;
+                Boolean hit = false;
+                // use the coordinates to find the dot selected, if any
+                if(dots.size()>0){
+                    for (Dot d:dots) {
+                        if (d.isHit(x*((float)56/53), y*((float)14/11))) {
+                            hit = true;
+                            dots = clearSelected(dots);
+                            d.setSelected(true);
+                        }
+                    }
+                }
+                if (hit) {
+                    Intent goingToEdit = new Intent(getActivity(), EditViewActivity.class);
+                    goingToEdit.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
+                    getActivity().startActivityForResult(goingToEdit, MainActivity.EDIT_DOTS_REQUEST);
+                }
+
+                return hit;
+            }
+        });
 
         ViewGroup linear = (ViewGroup) rootView.findViewById(R.id.linear);
-        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000,150);
+        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
         EditText inputEdit = new EditText(getActivity());
         inputEdit.setLayoutParams(lparams);
         inputEdit.setHint("Comments:");
@@ -121,24 +122,16 @@ public class Slidescreen extends Fragment {
         }
     }
 
-//    public void onActivityResult (int requestCode, int resultCode, Intent data) {
-//        if (requestCode == EDITDOTS) {
-//            if (resultCode == RESULT_OK) {
-//                this.dots = clearSelected(data.getParcelableArrayListExtra("DOTS"));
-//            }
-//        }
-//    }
-
     public List<Dot> getDots() {
         return dots;
     }
 
-//    public List<Dot> clearSelected(List<Dot> dots) {
-//        for (Dot i : dots) {
-//            i.setSelected(false);
-//        }
-//        return dots;
-//}
+    public List<Dot> clearSelected(List<Dot> dots) {
+        for (Dot i : dots) {
+            i.setSelected(false);
+        }
+        return dots;
+}
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);

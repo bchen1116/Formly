@@ -44,7 +44,7 @@ public class EditViewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            dots = savedInstanceState.getParcelableArrayList("DOTDOT");
+            dots = savedInstanceState.getParcelableArrayList("DOTS");
         }
         String[] colorsTxt = getApplicationContext().getResources().getStringArray(R.array.colors);
         for (int i = 0; i < colorsTxt.length; i++) {
@@ -83,15 +83,17 @@ public class EditViewActivity extends AppCompatActivity {
         });
 
     }
+
     public void clearDots() {
-        for (Dot i:dots) {
+        for (Dot i : dots) {
             i.setSelected(false);
         }
     }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         clearDots();
-        outState.putParcelableArrayList("DOTDOT", dots);
+        outState.putParcelableArrayList("DOTS", dots);
         super.onSaveInstanceState(outState);
     }
 
@@ -99,13 +101,11 @@ public class EditViewActivity extends AppCompatActivity {
         private Paint paint = new Paint();
         private Paint selectPaint = new Paint();
         private Paint textPaint = new Paint();
-        //        List<Dot> dots = new ArrayList<>();
         Dot selectedDot = null;
-        Dot current = null;
         private float mDownX;
         private float mDownY;
         private final float SCROLL_THRESHOLD = 10;
-        private boolean isOnClick;
+        private boolean isOnClick, isMoving;
 
 
         public SingleTouchEventView(Context context) {
@@ -113,12 +113,11 @@ public class EditViewActivity extends AppCompatActivity {
             editPeople.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     // create dialog to rename and recolor
-//                                    Toast.makeText(getContext(), "WE IN " + current.toString(), Toast.LENGTH_SHORT).show();
                     ColorDialogExtended dialog = ColorDialogExtended.newInstance(
                             ColorDialogExtended.SELECTION_SINGLE,
                             closestColorsList,
                             5, // Number of columns
-                            ColorDialogExtended.SIZE_SMALL, current.getName(), current.getColor());
+                            ColorDialogExtended.SIZE_SMALL, selectedDot.getName(), selectedDot.getColor());
 
                     dialog.show(getFragmentManager(), "some_tag");
 
@@ -128,9 +127,9 @@ public class EditViewActivity extends AppCompatActivity {
                             if (mSelectedColors.size() > 0) {
                                 for (String k : mSelectedColors.keySet()) {
                                     if (k != "NO_NAME") {
-                                        current.setName(k);
+                                        selectedDot.setName(k);
                                     }
-                                    current.setColor(mSelectedColors.get(k));
+                                    selectedDot.setColor(mSelectedColors.get(k));
                                 }
                             }
                         }
@@ -169,20 +168,14 @@ public class EditViewActivity extends AppCompatActivity {
                 } else {
                     textPaint.setTextSize(10f);
                 }
-//                if (current != null) {
                 if (p.isSelected()) {
                     editPeople.setVisibility(VISIBLE);
-                    current = p;
                     selectedDot = p;
                     canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter() + 10, selectPaint);
                 } else {
                     canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
                 }
                 canvas.drawText(p.getName(), p.getX(), p.getY(), textPaint);
-//                } else {
-//                    canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
-//                    canvas.drawText(p.getName(), p.getX(), p.getY(), textPaint);
-//                }
             }
             invalidate();
         }
@@ -191,18 +184,16 @@ public class EditViewActivity extends AppCompatActivity {
             boolean occupied = false;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.e("Hi we here", "sup");
+                    isMoving = false;
+                    Log.e("Hi we here", "supDOWNNN");
                     for (Dot d : dots) {
                         // check if we are initially hitting a dot on down motion. If we are, we want to modify this dot
                         if (d.isHit(event.getX(), event.getY())) {
-                            selectedDot = d;
-                            if (current == null) {
-                                d.setSelected(true);
-                            } else {
-                                current.setSelected(false);
-                                d.setSelected(true);
+                            if (selectedDot != null) {
+                                selectedDot.setSelected(false);
                             }
-                            current = d;
+                            d.setSelected(true);
+                            selectedDot = d;
                             mDownX = event.getX();
                             mDownY = event.getY();
                             isOnClick = true;
@@ -214,6 +205,7 @@ public class EditViewActivity extends AppCompatActivity {
                     }
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    Log.e("Hi we here", "sup");
                     float x = event.getX();
                     float y = event.getY();
                     for (Dot d : dots) {   // if we hit another dot, we cannot move this dot over it
@@ -227,12 +219,14 @@ public class EditViewActivity extends AppCompatActivity {
                             // this makes sure that we are actually trying to move the dot, and not just touching it
                             if (isOnClick && (Math.abs(mDownX - x) > SCROLL_THRESHOLD || Math.abs(mDownY - y) > SCROLL_THRESHOLD)) {
                                 selectedDot.setLocation(x, y);
+                                isMoving = true;
                             }
                         }
                     }
                     break;
 
                 case MotionEvent.ACTION_UP:
+                    Log.e("HI we here", "UPPPP");
                     isOnClick = false;
                     x = (Math.round(event.getX() / 50) * 50);
                     y = (Math.round(event.getY() / 50) * 50);
@@ -248,35 +242,35 @@ public class EditViewActivity extends AppCompatActivity {
                         }
                         // if the spot isn't occupied where user lifts finger, hide the button
                         if (!occupied) {
-                            if (current != null) {
-                                current.setSelected(false);
-                                current = null;
-                                editPeople.setVisibility(INVISIBLE);
-                            } else {
-                                if (selectedDot != null) {    //if we currently hold a dot, we are dropping the dot here
+                            if (selectedDot != null) {    //if we currently hold a dot, we are dropping the dot here
+                                if (isMoving) {
                                     selectedDot.setLocation(x, y);
                                     selectedDot.setSelected(false);
                                     selectedDot = null;
-                                    break;
+                                } else {
+                                    selectedDot.setSelected(false);
+                                    selectedDot = null;
                                 }
-                                Dot p = new Dot(x, y);        // otherwise, we add a new dot here
-                                dots.add(p);
+                                editPeople.setVisibility(INVISIBLE);
+                                break;
                             }
+                            Dot p = new Dot(x, y);        // otherwise, we add a new dot here
+                            dots.add(p);
                         }
-                    // otherwise, it is outside of range, so we delete this dot
+                        selectedDot = null;
+                        // otherwise, it is outside of range, so we delete this dot
                     } else {
                         dots.remove(selectedDot);
                         selectedDot = null;
                     }
+                    isMoving = false;
                     break;
-                case MotionEvent.ACTION_CANCEL: {
-                    break;
-                }
             }
             invalidate();
             return true;
         }
     }
+
     @Override
     public void onBackPressed() {
         Log.e("BAAAACCCKKK", "IT UPPPP biatch");

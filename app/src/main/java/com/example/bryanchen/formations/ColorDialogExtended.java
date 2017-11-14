@@ -118,7 +118,7 @@ public class ColorDialogExtended extends ColorPickerDialog{
         } else {
             input.setHint("New Name");
         }
-
+        input.setSingleLine();
         LinearLayout l = new LinearLayout(getActivity());
         l.setOrientation(LinearLayout.VERTICAL);
         l.setGravity(Gravity.CENTER);
