@@ -68,11 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
         if (NUM_ITEMS < 1){
-            Log.e("ARE WE IN", "DID SOMEHTING HAPPEN " + NUM_ITEMS);
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
             addView(s);
             NUM_ITEMS++;
-            Log.e("ARE WE IN", "DID SOMEHTING HAPPEN " + NUM_ITEMS);
             myAdapter.notifyDataSetChanged();
         }
 
