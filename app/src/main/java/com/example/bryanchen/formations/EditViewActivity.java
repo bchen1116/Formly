@@ -34,10 +34,10 @@ import java.util.HashMap;
 
 public class EditViewActivity extends AppCompatActivity {
     ArrayList<Dot> dots = new ArrayList<>();
-    float top = 100;
-    float bottom = 1500;
-    float left = 20;
-    float right = 1050;
+    float top = 10;
+    float bottom = 1200;
+    float left = 10;
+    float right = 1000;
     private Button editPeople;
     private ArrayList<Integer> closestColorsList = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class EditViewActivity extends AppCompatActivity {
             // set up paint to draw dots
             paint.setStyle(Paint.Style.FILL);
             selectPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            selectPaint.setColor(Color.BLUE);
+//            selectPaint.setColor(Color.BLUE);
             textPaint.setColor(Color.BLACK);
             textPaint.setTextAlign(Paint.Align.CENTER);
 
@@ -171,6 +171,8 @@ public class EditViewActivity extends AppCompatActivity {
                 if (p.isSelected()) {
                     editPeople.setVisibility(VISIBLE);
                     selectedDot = p;
+                    selectPaint.setColor(p.getColor());
+                    selectPaint.setShadowLayer((float)p.getDiameter()+50, p.getX(), p.getY(), Color.LTGRAY);
                     canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter() + 10, selectPaint);
                 } else {
                     canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
@@ -185,7 +187,7 @@ public class EditViewActivity extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     isMoving = false;
-                    Log.e("Hi we here", "supDOWNNN");
+                    Log.e("heyo update do dis work", "supDOWNNN");
                     for (Dot d : dots) {
                         // check if we are initially hitting a dot on down motion. If we are, we want to modify this dot
                         if (d.isHit(event.getX(), event.getY())) {

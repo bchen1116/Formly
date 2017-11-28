@@ -32,7 +32,7 @@ public class Slidescreen extends Fragment {
     public int page;
     ViewGroup rootView;
     drawView s;
-//    static final int EDIT_DOTS_REQUEST = 12;
+    //    static final int EDIT_DOTS_REQUEST = 12;
     MotionEvent e;
     boolean hasMotion;
     // class member variable to save the X,Y coordinates
@@ -131,7 +131,7 @@ public class Slidescreen extends Fragment {
             i.setSelected(false);
         }
         return dots;
-}
+    }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
