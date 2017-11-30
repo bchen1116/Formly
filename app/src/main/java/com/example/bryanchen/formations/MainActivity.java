@@ -32,6 +32,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.sql.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     static final String STORE_FAIL = "fail";
     static final String LOAD = "load";
     static final String DOC_GET = "DOC GET";
+    public int numLoadedFrags = 0;
 
     private int NUM_ITEMS = 0;
     ArrayList<Fragment> fragList = new ArrayList<>();
@@ -62,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        Intent intent = getIntent();
+        numLoadedFrags = intent.getExtras().getInt("numFrags");
+
         mViewPager = (android.support.v4.view.ViewPager) findViewById(R.id.pager);
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(myAdapter);
@@ -76,59 +81,45 @@ public class MainActivity extends AppCompatActivity {
             myAdapter.notifyDataSetChanged();
         }
 
-//        DocumentReference docRef = db.collection("User0")
-
-        
-        CollectionReference collectionRef = db.collection("User0").document("Fragment 0").collection("Dots");
-        collectionRef.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            dots = new ArrayList<>();
-                            for (DocumentSnapshot doc : task.getResult()) {
-                                Map<String, Object> newDotData = doc.getData();
-                                Dot newDot = new Dot(newDotData);
-                                dots.add(newDot);
+        Log.d("MAIN", "numLoadedFrags: " + numLoadedFrags);
+        for (int i = 0; i < numLoadedFrags; i++) {
+            final int currentFragNum = i;
+            Log.d("FOR", "lesgoooo " + i);
+            db.collection("User1").document("Fragments").collection("Fragment " + i)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                dots = new ArrayList<>();
+                                for (DocumentSnapshot doc : task.getResult()) {
+                                    Map<String, Object> newDotData = doc.getData();
+                                    Dot newDot = new Dot(newDotData);
+                                    dots.add(newDot);
 
 //                                Log.e("Dot Object",doc.getId() + " => " + doc.getData());
+                                }
+
+                                if (currentFragNum == 0) {
+                                    Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                                    f.setDots(dots);
+                                } else {
+                                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                                    s.setDots(dots);
+
+                                    NUM_ITEMS++;
+                                    myAdapter.addView(s, currentFragNum);
+                                }
+
+                                myAdapter.notifyDataSetChanged();
                             }
-
-                            Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                            f.setDots(dots);
-                            myAdapter.notifyDataSetChanged();
-
+                            else {
+                                Log.e("Load Fail", "Error getting documents: ", task.getException());
+                            }
                         }
-                        else {
-                            Log.e("Load Fail", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+                    });
+        }
 
-//        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                if (task.isSuccessful()) {
-//                    DocumentSnapshot document = task.getResult();
-//                    if (document.exists()) {
-////                        List<Dot> doc_dots = document.toObject(dots.getClass());
-////                        GenericTypeIndicator<List<Dot>> t = new GenericTypeIndicator<List<Dot>>() {};
-////                        db.collection("frags").get().;
-//
-////                        Log.d(DOC_GET, "DocumentSnapshot data toObject: " + doc_dots); //task.getResult().getData().get("0").getClass().toString());
-////                        for (Object d : task.getResult().getData().values()) {
-////                            Log.d(DOC_GET, "maybe a dot: " + d.toString());
-////                        }
-//                    }
-//                    else {
-//                        Log.d(DOC_GET, "No such document");
-//                    }
-//                }
-//                else {
-//                    Log.d("DOC FAIL", "get failed with ", task.getException());
-//                }
-//            }
-//        });
 
         // button to add more slides to the activity
         FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button);
@@ -174,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 dots = data.getParcelableArrayListExtra("DOTS");
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
                 f.setDots(dots);
+                int fragNumInt = 0;
 
                 for (Fragment fr:  myAdapter.getFragment()) {
 //                    Log.d("fragment", "another fragment at page " + fr.)
@@ -181,12 +173,15 @@ public class MainActivity extends AppCompatActivity {
                     frag.updateDots(dots);
 
                     Log.v("FRAG_ID", String.valueOf(frag.getId()));
-                    int num = 0;
+                    int dotNumInt = 0;
+
                     for (Dot d : frag.getDots()) {
                         // Writing to fireStore
                         // Root Collection will later be named to a logged-in user ID or some other identifier
-                        String fragID = String.valueOf(num);
-                        db.collection("User0").document("Fragment " + fragID).collection("Dots").document(d.getID().toString())
+//                        String dotNum = String.valueOf(dotNumInt);
+                        String fragNum = String.valueOf(fragNumInt);
+
+                        db.collection("User1").document("Fragments").collection("Fragment " + fragNum).document(d.getID().toString())
                                 .set(d)
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
@@ -200,9 +195,28 @@ public class MainActivity extends AppCompatActivity {
                                         Log.e(STORE_FAIL, "Error writing document", e);
                                     }
                                 });
-                        num++;
+//                        dotNum++;
                     }
+                    fragNumInt++;
                 }
+
+                Map<String, Integer> numData = new HashMap<>();
+                numData.put("num", fragNumInt);
+                db.collection("User1").document("Num Frags")
+                        .set(numData)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(STORE, "Stored the number of total fragments");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e(STORE_FAIL, "Error writing num", e);
+                            }
+                        });
+
                 myAdapter.notifyDataSetChanged();
 
             }
