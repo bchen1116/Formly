@@ -5,9 +5,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
@@ -17,17 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import static android.app.Activity.RESULT_OK;
 
 
-public class Slidescreen extends Fragment {
+public class Slidescreen extends Fragment{
     private List<Dot> dots = new ArrayList<>();
     public int page;
     ViewGroup rootView;
@@ -40,6 +34,7 @@ public class Slidescreen extends Fragment {
     public Slidescreen() {
         // Required empty public constructor
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -66,9 +61,9 @@ public class Slidescreen extends Fragment {
             }
         });
 
-        s.setOnLongClickListener( new View.OnLongClickListener() {
+        s.setOnClickListener( new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
+            public void onClick(View v) {
                 hasMotion = true;
                 // retrieve the stored coordinates
                 float x = lastTouchDownXY[0];
@@ -78,20 +73,20 @@ public class Slidescreen extends Fragment {
                 // use the coordinates to find the dot selected, if any
                 if(dots.size()>0){
                     for (Dot d:dots) {
-                        if (d.isHit(x*((float)56/53), y*((float)14/11))) {
+                        if (d.isHit(x-10, y-10)) {
                             hit = true;
                             dots = clearSelected(dots);
                             d.setSelected(true);
                         }
                     }
                 }
-                if (hit) {
+                if (hit && inRange(x, y)) {
                     Intent goingToEdit = new Intent(getActivity(), EditViewActivity.class);
+//                    offsetDots(dots, true);
                     goingToEdit.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
                     getActivity().startActivityForResult(goingToEdit, MainActivity.EDIT_DOTS_REQUEST);
                 }
 
-                return hit;
             }
         });
 
@@ -107,7 +102,12 @@ public class Slidescreen extends Fragment {
 
     public ViewGroup setDots(List<Dot> d) {
         dots = d;
+//        offsetDots(dots, false);
         return rootView;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
     }
 
     public void updateDots(List<Dot> d) {
@@ -122,6 +122,18 @@ public class Slidescreen extends Fragment {
         }
     }
 
+//    public void offsetDots(List<Dot> dotted, boolean isSaving) {
+//        if (isSaving) {
+//            for (Dot d: dotted) {
+//                d.setLocation(d.getX()-10, d.getY()-10);
+//            }
+//        } else {
+//            for (Dot d: dotted) {
+//                d.setLocation(d.getX()+10, d.getY()+10);
+//            }
+//        }
+//    }
+
     public List<Dot> getDots() {
         return dots;
     }
@@ -132,6 +144,7 @@ public class Slidescreen extends Fragment {
         }
         return dots;
     }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -187,8 +200,8 @@ public class Slidescreen extends Fragment {
                     } else {
                         textPaint.setTextSize(25f);
                     }
-                    float xLoc = p.getX() * (53 / (float) 56);
-                    float yLoc = p.getY() * (11 / (float) 14);
+                    float xLoc = p.getX()+10;
+                    float yLoc = p.getY()+10;
                     canvas.drawCircle(xLoc, yLoc, (float) p.getDiameter(), paint);
                     canvas.drawText(p.getName(), xLoc, yLoc, textPaint);
                 }
@@ -201,4 +214,48 @@ public class Slidescreen extends Fragment {
         return this.page;
     }
 
+    public boolean inRange(float x, float y) {
+        return x > 10 && x < 1000 && y < 1200 && y > 10;
+    }
+
+    public DotList getDotList() {
+        return new DotList(this.page, this.dots);
+    }
+
+//    public class DotList implements Parcelable {
+//        public List<Dot> dotList;
+//        public int pageNumber;
+//
+//        public DotList(int num, List<Dot> dots) {
+//            this.dotList = dots;
+//            this.pageNumber = num;
+//        }
+//
+//        protected DotList(Parcel in) {
+//            this.pageNumber = Integer.parseInt(in.readString());
+//            in.readTypedList(dotList, Dot.CREATOR);
+//        }
+//
+//        @Override
+//        public int describeContents() {
+//            return 0;
+//        }
+//
+//        @Override
+//        public void writeToParcel(Parcel parcel, int i) {
+//            parcel.writeString(String.valueOf(this.pageNumber));
+//            parcel.writeTypedList(dotList);
+//        }
+//
+//        public final Parcelable.Creator<DotList> CREATOR = new Parcelable.Creator<DotList>() {
+//            public DotList createFromParcel(Parcel in) {
+//                return new DotList(in);
+//            }
+//
+//            public DotList[] newArray(int size) {
+//                return new DotList[size];
+//            }
+//        };
+//
+//    }
 }

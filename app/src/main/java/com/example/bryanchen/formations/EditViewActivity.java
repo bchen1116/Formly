@@ -1,34 +1,21 @@
 package com.example.bryanchen.formations;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.BaseTransientBottomBar;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.graphics.Canvas;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 
-import com.savvisingh.colorpickerdialog.ColorPickerDialog;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -40,11 +27,13 @@ public class EditViewActivity extends AppCompatActivity {
     float right = 1000;
     private Button editPeople;
     private ArrayList<Integer> closestColorsList = new ArrayList<>();
+    float lefty, topy, righty, bottomy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             dots = savedInstanceState.getParcelableArrayList("DOTS");
+//            offsetDots(dots, false);
         }
         String[] colorsTxt = getApplicationContext().getResources().getStringArray(R.array.colors);
         for (int i = 0; i < colorsTxt.length; i++) {
@@ -54,6 +43,7 @@ public class EditViewActivity extends AppCompatActivity {
 
         if (getIntent().getParcelableArrayListExtra("DOTS") != null) {
             dots = getIntent().getParcelableArrayListExtra("DOTS");
+//            offsetDots(dots, false);
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_view);
@@ -76,6 +66,7 @@ public class EditViewActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
                 Intent data = new Intent();
                 clearDots();
+//                offsetDots(dots, true);
                 data.putParcelableArrayListExtra("DOTS", dots);
                 setResult(RESULT_OK, data);
                 finish();
@@ -89,6 +80,7 @@ public class EditViewActivity extends AppCompatActivity {
             i.setSelected(false);
         }
     }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -106,6 +98,7 @@ public class EditViewActivity extends AppCompatActivity {
         private float mDownY;
         private final float SCROLL_THRESHOLD = 10;
         private boolean isOnClick, isMoving;
+
 
 
         public SingleTouchEventView(Context context) {
@@ -143,6 +136,8 @@ public class EditViewActivity extends AppCompatActivity {
             });
         }
 
+
+
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
@@ -150,7 +145,13 @@ public class EditViewActivity extends AppCompatActivity {
             paint.setColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
             paint.setStrokeWidth(5);
             paint.setStyle(Paint.Style.STROKE);
-            canvas.drawRect(left, top, right, bottom, paint);
+            float canvasHeight = canvas.getHeight()/2;
+            float canvasWidth = canvas.getWidth()/2;
+            lefty = canvasWidth - (right-left)/2;
+            righty = canvasWidth + (right-left)/2;
+            topy = canvasHeight - (bottom-top)/2-20;
+            bottomy = canvasHeight + (bottom-top)/2-20;
+            canvas.drawRect(lefty, topy, righty, bottomy, paint);
 
             // set up paint to draw dots
             paint.setStyle(Paint.Style.FILL);
@@ -172,12 +173,12 @@ public class EditViewActivity extends AppCompatActivity {
                     editPeople.setVisibility(VISIBLE);
                     selectedDot = p;
                     selectPaint.setColor(p.getColor());
-                    selectPaint.setShadowLayer((float)p.getDiameter()+50, p.getX(), p.getY(), Color.LTGRAY);
-                    canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter() + 10, selectPaint);
+                    selectPaint.setShadowLayer((float)p.getDiameter()+100, p.getX()+lefty, p.getY()+topy, Color.LTGRAY);
+                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter() + 10, selectPaint);
                 } else {
-                    canvas.drawCircle(p.getX(), p.getY(), (float) p.getDiameter(), paint);
+                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter(), paint);
                 }
-                canvas.drawText(p.getName(), p.getX(), p.getY(), textPaint);
+                canvas.drawText(p.getName(), p.getX()+lefty, p.getY()+topy, textPaint);
             }
             invalidate();
         }
@@ -187,10 +188,9 @@ public class EditViewActivity extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     isMoving = false;
-                    Log.e("heyo update do dis work", "supDOWNNN");
                     for (Dot d : dots) {
                         // check if we are initially hitting a dot on down motion. If we are, we want to modify this dot
-                        if (d.isHit(event.getX(), event.getY())) {
+                        if (d.isHit(event.getX()-lefty, event.getY()-topy)) {
                             if (selectedDot != null) {
                                 selectedDot.setSelected(false);
                             }
@@ -207,11 +207,10 @@ public class EditViewActivity extends AppCompatActivity {
                     }
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    Log.e("Hi we here", "sup");
                     float x = event.getX();
                     float y = event.getY();
                     for (Dot d : dots) {   // if we hit another dot, we cannot move this dot over it
-                        if (d.isHit(x, y) && d != selectedDot) {
+                        if (d.isHit(x-lefty, y-topy) && d != selectedDot) {
                             occupied = true;
                             break;
                         }
@@ -220,7 +219,7 @@ public class EditViewActivity extends AppCompatActivity {
                         if (selectedDot != null) {
                             // this makes sure that we are actually trying to move the dot, and not just touching it
                             if (isOnClick && (Math.abs(mDownX - x) > SCROLL_THRESHOLD || Math.abs(mDownY - y) > SCROLL_THRESHOLD)) {
-                                selectedDot.setLocation(x, y);
+                                selectedDot.setLocation(x-lefty, y-topy);
                                 isMoving = true;
                             }
                         }
@@ -228,15 +227,14 @@ public class EditViewActivity extends AppCompatActivity {
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    Log.e("HI we here", "UPPPP");
                     isOnClick = false;
                     x = (Math.round(event.getX() / 50) * 50);
                     y = (Math.round(event.getY() / 50) * 50);
 
                     // if the touch is in range
-                    if (x <= right && x >= left && y <= bottom && y >= top) {
+                    if (x < righty && x > lefty && y < bottomy && y > topy) {
                         for (Dot d : dots) {
-                            if (d.isHit(x, y)) {    // if the spot is occupied, we cannot drop the dot here
+                            if (d.isHit(x-lefty, y-topy)) {    // if the spot is occupied, we cannot drop the dot here
                                 occupied = true;
                                 selectedDot = null;
                                 break;
@@ -246,7 +244,7 @@ public class EditViewActivity extends AppCompatActivity {
                         if (!occupied) {
                             if (selectedDot != null) {    //if we currently hold a dot, we are dropping the dot here
                                 if (isMoving) {
-                                    selectedDot.setLocation(x, y);
+                                    selectedDot.setLocation(x-lefty, y-topy);
                                     selectedDot.setSelected(false);
                                     selectedDot = null;
                                 } else {
@@ -256,7 +254,7 @@ public class EditViewActivity extends AppCompatActivity {
                                 editPeople.setVisibility(INVISIBLE);
                                 break;
                             }
-                            Dot p = new Dot(x, y);        // otherwise, we add a new dot here
+                            Dot p = new Dot(x-lefty, y-topy);        // otherwise, we add a new dot here
                             dots.add(p);
                         }
                         selectedDot = null;
@@ -275,7 +273,7 @@ public class EditViewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Log.e("BAAAACCCKKK", "IT UPPPP biatch");
+//        Log.e("BAAAACCCKKK", "IT UPPPP biatch");
     }
 }
 
