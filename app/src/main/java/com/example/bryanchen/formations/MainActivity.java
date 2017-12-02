@@ -3,15 +3,20 @@ package com.example.bryanchen.formations;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
+import android.widget.Button;
 import android.os.Bundle;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
+import android.view.LayoutInflater;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 
@@ -20,10 +25,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +46,6 @@ public class MainActivity extends AppCompatActivity {
     static final String STORE_FAIL = "fail";
     static final String LOAD = "load";
     static final String DOC_GET = "DOC GET";
-
-    public String className = "hi";
 
     private int NUM_ITEMS = 0;
     ArrayList<Fragment> fragList = new ArrayList<>();
@@ -87,17 +92,25 @@ public class MainActivity extends AppCompatActivity {
 //                                Log.e("Dot Object",doc.getId() + " => " + doc.getData());
                             }
 
-                            Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                            f.setDots(dots);
-//                            f.setPage(NUM_ITEMS);
-                            myAdapter.notifyDataSetChanged();
+                                if (currentFragNum == 0) {
+                                    Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                                    f.setDots(dots);
+                                } else {
+                                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                                    s.setDots(dots);
 
+                                    NUM_ITEMS++;
+                                    myAdapter.addView(s, currentFragNum);
+                                }
+
+                                myAdapter.notifyDataSetChanged();
+                            }
+                            else {
+                                Log.e("Load Fail", "Error getting documents: ", task.getException());
+                            }
                         }
-                        else {
-                            Log.e("Load Fail", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+                    });
+        }
 
 //        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 //            @Override
@@ -132,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
                 Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
                 s.setDots(dots);
-                s.setPage(NUM_ITEMS);
                 NUM_ITEMS++;
                 addView(s);
                 myAdapter.notifyDataSetChanged();
@@ -302,60 +314,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public ArrayList<Fragment> getFragment() { return mlist;}
-    }
-
-//    public class FragList implements Parcelable {
-//
-//        public List<Fragment> slides;
-//        public List<DotList> fragList = new ArrayList<>();
-//        public String activityName;
-//
-//        public FragList(String name, List<Fragment> frags) {
-//            this.slides = frags;
-//            for (Fragment d: frags) {
-//                Slidescreen r = (Slidescreen) d;
-//                this.fragList.add((r.getDotList()));
-//            }
-//            this.activityName = name;
-//        }
-//
-//        protected FragList(Parcel in) {
-//            this.activityName = in.readString();
-//            in.readTypedList(fragList, DotList.CREATOR);
-//        }
-//
-//        @Override
-//        public int describeContents() {
-//            return 0;
-//        }
-//
-//        @Override
-//        public void writeToParcel(Parcel parcel, int i) {
-//            parcel.writeString(this.activityName);
-//            parcel.writeTypedList(fragList);
-//        }
-//
-//        public final Parcelable.Creator<FragList> CREATOR = new Parcelable.Creator<FragList>() {
-//            public FragList createFromParcel(Parcel in) {
-//                return new FragList(in);
-//            }
-//
-//            public FragList[] newArray(int size) {
-//                return new FragList[size];
-//            }
-//        };
-//
-//    }
-
-    @Override
-    public void onBackPressed() {
-        FragList result = new FragList(this.className, this.myAdapter.getFragment());
-        Log.e("onbackpressedfrag", ""+result.fragList.size());
-        Intent finishing = new Intent();
-//        Bundle b = new Bundle();
-//        b.putParcelable("FINAL", result);
-        finishing.putExtra("FINAL", result);
-        setResult(RESULT_OK, finishing);
-        finish();
     }
 }
