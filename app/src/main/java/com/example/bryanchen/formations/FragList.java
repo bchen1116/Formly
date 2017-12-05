@@ -23,10 +23,9 @@ public class FragList implements Parcelable {
         Log.e("fragss", slides.size()+"");
         for (Fragment d: frags) {
             Slidescreen r = (Slidescreen) d;
-            DotList dottie = r.getDotList();
+            r.updateComments();
+            DotList dottie = new DotList(r.getPage(), r.getDots(), r.getComments());
             this.fragList.add(dottie);
-            Log.e("DOTLIST STRING", dottie.toString());
-            Log.e("FRAGUPDATE", fragList.size()+"");
         }
         this.activityName = name;
     }
@@ -36,9 +35,15 @@ public class FragList implements Parcelable {
         List<DotList> fList = new ArrayList<>();
         in.readTypedList(fList, DotList.CREATOR);
         fragList = fList;
-        Log.e("FragList valid?", ""+fragList.size());
     }
 
+    public String getActivityName() {
+        return this.activityName;
+    }
+
+    public ArrayList<DotList> getDots() {
+        return (ArrayList) this.fragList;
+    }
     @Override
     public String toString() {
         return String.valueOf(this.activityName) +" " + this.fragList.size();

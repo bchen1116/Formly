@@ -13,6 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 
@@ -40,7 +42,7 @@ import java.util.concurrent.Executor;
 public class MainActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    List<Dot> dots = null;
+    List<Dot> dots = new ArrayList<>();
     static final int EDIT_DOTS_REQUEST = 12;
     private static final int REQUEST_PERMISSION = 1;
     static final String STORE = "store";
@@ -48,23 +50,33 @@ public class MainActivity extends AppCompatActivity {
     static final String LOAD = "load";
     static final String DOC_GET = "DOC GET";
 
-    public String className = "hi";
+    public int numLoadedFrags = 0;
+    public String className = "";
 
     private int NUM_ITEMS = 0;
     ArrayList<Fragment> fragList = new ArrayList<>();
     android.support.v4.view.ViewPager mViewPager;
     public TabsPagerAdapter myAdapter;
-    public int numLoadedFrags = 0;
+    private Toolbar mActionBarToolbar;
+    private Bundle b = null;
+    public TextView pageNumbers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            dots = savedInstanceState.getParcelableArrayList("DOTDOT");
-        }
         setContentView(R.layout.activity_main);
+
+        pageNumbers = (TextView) findViewById(R.id.pageNumber);
+        try {
+            b = getIntent().getExtras().getBundle("fragList");
+        } catch (Exception e) {
+
+        }
+        className = getIntent().getExtras().getString("ActivityName");
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(className);
 
         Intent intent = getIntent();
         numLoadedFrags = intent.getExtras().getInt("numFrags");
@@ -73,11 +85,32 @@ public class MainActivity extends AppCompatActivity {
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(myAdapter);
 
-        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
-        if (NUM_ITEMS < 1){
+        if (b != null) {
+            savedInstanceState = b;
+            className = b.getString("name");
+            List<DotList> dlists = b.getParcelableArrayList("dotlists");
+            for (int i = 0; i < dlists.size(); i++) {
+                Log.e("PAGES SUP", " " + i);
+                Slidescreen s = new Slidescreen().newInstance(String.valueOf(i), i);
+                s.setPage(i);
+                s.setDots(dlists.get(i).getDots());
+                s.setComments(dlists.get(i).getComment());
+                addView(s);
+                NUM_ITEMS++;
+            }
+            myAdapter.notifyDataSetChanged();
+            Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(0);
+            dots = s.getDots();
+            mViewPager.setCurrentItem(0, true);
+
+        }
+
+//        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
+        if (NUM_ITEMS < 1) {
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
             addView(s);
             NUM_ITEMS++;
+            pageNumbers.setText(NUM_ITEMS + " of " + NUM_ITEMS);
             myAdapter.notifyDataSetChanged();
         }
 
@@ -99,21 +132,21 @@ public class MainActivity extends AppCompatActivity {
                                 Dot newDot = new Dot(newDotData);
                                 dots.add(newDot);
 //                                Log.e("Dot Object",doc.getId() + " => " + doc.getData());
-                            }
-                            if (currentFragNum == 0) {
-                                Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                                f.setDots(dots);
+                                }
+
+                                if (currentFragNum == 0) {
+                                    Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                                    f.setDots(dots);
+                                } else {
+                                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                                    s.setDots(dots);
+
+                                    NUM_ITEMS++;
+                                    myAdapter.addView(s, currentFragNum);
+                                }
+
+                                myAdapter.notifyDataSetChanged();
                             } else {
-                                Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
-                                myAdapter.addView(s, currentFragNum);
-                                s.setDots(dots);
-
-                                NUM_ITEMS++;
-                            }
-
-                            myAdapter.notifyDataSetChanged();
-                            }
-                            else {
                                 Log.e("Load Fail", "Error getting documents: ", task.getException());
                             }
                         }
@@ -150,22 +183,24 @@ public class MainActivity extends AppCompatActivity {
 
 
         // button to add more slides to the activity
-        FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button);
+        FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button1);
         fragButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-//                addButton.setVisibility(View.VISIBLE);
-                Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
-                Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
-                s.setDots(dots);
-                NUM_ITEMS++;
-                addView(s);
-                myAdapter.notifyDataSetChanged();
+                if (dots.size() > 0) {
+                    Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
+                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                    s.setDots(dots);
+                    NUM_ITEMS++;
+                    addView(s);
+                    myAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Add people first!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
-        // button to add people to the screen
-
-        addButton.setOnClickListener(new View.OnClickListener() {
+        Button doneButton = (Button) findViewById(R.id.button);
+        doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
@@ -176,13 +211,31 @@ public class MainActivity extends AppCompatActivity {
                 if (dots != null) {
                     intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
                 }
-                intent.putExtra("fragNum", f.)
+//                intent.putExtra("fragNum", f.) TODO
                 startActivityForResult(intent, EDIT_DOTS_REQUEST);
 
 
+                endSession();
             }
         });
     }
+
+        // button to add people to the screen
+//        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
+//        addButton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
+//                Intent intent = new Intent(v.getContext(), EditViewActivity.class);
+//                Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+//                dots = f.getDots();
+//                intent.putExtra("ActivityName", className);
+//                if (dots != null) {
+//                    intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
+//                }
+//                startActivityForResult(intent, EDIT_DOTS_REQUEST);
+//            }
+//        });
+//    }
 
     public void dotsUpdate(){
         myAdapter.notifyDataSetChanged();
@@ -217,13 +270,12 @@ public class MainActivity extends AppCompatActivity {
 //                                Log.w("BAD BYE", "Error deleting document", e);
 //                            }
 //                        });
-
                 for (Fragment fr:  myAdapter.getFragment()) {
 //                    Log.d("fragment", "another fragment at page " + fr.)
                     Slidescreen frag = (Slidescreen) fr;
                     frag.updateDots(dots);
 
-                    Log.v("FRAG_ID", String.valueOf(frag.getId()));
+                    Log.v("FRAG_NUM", String.valueOf(fragNumInt));
                     int dotNumInt = 0;
                     for (Dot d : frag.getDots()) {
                         // Writing to fireStore
@@ -243,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
                                         Log.e(STORE_FAIL, "Error writing document", e);
                                     }
                                 });
-//                        dotNum++;
                     }
                     fragNumInt++;
                 }
@@ -253,17 +304,17 @@ public class MainActivity extends AppCompatActivity {
                 db.collection("User1").document("Num Frags")
                     .set(numData)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d(STORE, "Stored the number of total fragments");
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.e(STORE_FAIL, "Error writing num", e);
-                            }
-                        });
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(STORE, "Stored the number of total fragments");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e(STORE_FAIL, "Error writing num", e);
+                        }
+                    });
 
                 myAdapter.notifyDataSetChanged();
 
@@ -420,64 +471,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public Fragment getCurrentFrag(int position) {
+            pageNumbers.setText(position+1 + " of "+ NUM_ITEMS);
             return mlist.get(position);
         }
 
         public ArrayList<Fragment> getFragment() { return mlist;}
     }
 
-//    public class FragList implements Parcelable {
-//
-//        public List<Fragment> slides;
-//        public List<DotList> fragList = new ArrayList<>();
-//        public String activityName;
-//
-//        public FragList(String name, List<Fragment> frags) {
-//            this.slides = frags;
-//            for (Fragment d: frags) {
-//                Slidescreen r = (Slidescreen) d;
-//                this.fragList.add((r.getDotList()));
-//            }
-//            this.activityName = name;
-//        }
-//
-//        protected FragList(Parcel in) {
-//            this.activityName = in.readString();
-//            in.readTypedList(fragList, DotList.CREATOR);
-//        }
-//
-//        @Override
-//        public int describeContents() {
-//            return 0;
-//        }
-//
-//        @Override
-//        public void writeToParcel(Parcel parcel, int i) {
-//            parcel.writeString(this.activityName);
-//            parcel.writeTypedList(fragList);
-//        }
-//
-//        public final Parcelable.Creator<FragList> CREATOR = new Parcelable.Creator<FragList>() {
-//            public FragList createFromParcel(Parcel in) {
-//                return new FragList(in);
-//            }
-//
-//            public FragList[] newArray(int size) {
-//                return new FragList[size];
-//            }
-//        };
-//
-//    }
-
-    @Override
-    public void onBackPressed() {
+    public void endSession() {
         FragList result = new FragList(this.className, this.myAdapter.getFragment());
-        Log.e("onbackpressedfrag", ""+result.fragList.size());
         Intent finishing = new Intent();
-//        Bundle b = new Bundle();
-//        b.putParcelable("FINAL", result);
         finishing.putExtra("FINAL", result);
         setResult(RESULT_OK, finishing);
         finish();
+    }
+    @Override
+    public void onBackPressed() {
+        endSession();
     }
 }

@@ -5,6 +5,7 @@
     <color name="colorPrimary">#251f47</color>
     <color name="iguana">#71b48d</color>
     <color name="purple_navy">#404e7c</color>
+    <color name="silver">#C0C0C0</color>
     <string-array name="colors">
         <item name="Silver">#C0C0C0</item>
         <item name="Maroon">#800000</item>
