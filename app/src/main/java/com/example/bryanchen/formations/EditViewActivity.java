@@ -15,11 +15,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class EditViewActivity extends AppCompatActivity {
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     ArrayList<Dot> dots = new ArrayList<>();
     float top = 10;
     float bottom = 1200;
@@ -262,6 +264,8 @@ public class EditViewActivity extends AppCompatActivity {
                     } else {
                         dots.remove(selectedDot);
                         selectedDot = null;
+
+                        db.collection("User1").document("Fragments").collection("")
                     }
                     isMoving = false;
                     break;

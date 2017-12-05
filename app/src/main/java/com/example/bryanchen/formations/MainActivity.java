@@ -1,6 +1,7 @@
 package com.example.bryanchen.formations;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.os.Bundle;
@@ -19,14 +20,21 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Fragment> fragList = new ArrayList<>();
     android.support.v4.view.ViewPager mViewPager;
     public TabsPagerAdapter myAdapter;
+    public int numLoadedFrags = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Intent intent = getIntent();
+        numLoadedFrags = intent.getExtras().getInt("numFrags");
 
         mViewPager = (android.support.v4.view.ViewPager) findViewById(R.id.pager);
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
@@ -71,9 +83,12 @@ public class MainActivity extends AppCompatActivity {
 
 //        DocumentReference docRef = db.collection("User0")
 
-        
-        CollectionReference collectionRef = db.collection("User0").document("Fragment 0").collection("Dots");
-        collectionRef.get()
+        Log.d("MAIN", "numLoadedFrags: " + numLoadedFrags);
+        for (int i = 0; i < numLoadedFrags; i++) {
+            final int currentFragNum = i;
+            Log.d("FOR", "lesgoooo " + i);
+            db.collection("User1").document("Fragments").collection("Fragment " + i)
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -83,46 +98,56 @@ public class MainActivity extends AppCompatActivity {
                                 Map<String, Object> newDotData = doc.getData();
                                 Dot newDot = new Dot(newDotData);
                                 dots.add(newDot);
-
 //                                Log.e("Dot Object",doc.getId() + " => " + doc.getData());
                             }
+                            if (currentFragNum == 0) {
+                                Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                                f.setDots(dots);
+                            } else {
+                                Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                                myAdapter.addView(s, currentFragNum);
+                                s.setDots(dots);
 
-                            Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                            f.setDots(dots);
-                            f.setPage(NUM_ITEMS);
+                                NUM_ITEMS++;
+                            }
+
                             myAdapter.notifyDataSetChanged();
-
+                            }
+                            else {
+                                Log.e("Load Fail", "Error getting documents: ", task.getException());
+                            }
                         }
-                        else {
-                            Log.e("Load Fail", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+                    });
+                }
 
-//        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                if (task.isSuccessful()) {
-//                    DocumentSnapshot document = task.getResult();
-//                    if (document.exists()) {
-////                        List<Dot> doc_dots = document.toObject(dots.getClass());
-////                        GenericTypeIndicator<List<Dot>> t = new GenericTypeIndicator<List<Dot>>() {};
-////                        db.collection("frags").get().;
+        
+//        CollectionReference collectionRef = db.collection("User1").document("Fragment 0").collection("Dots");
+//        collectionRef.get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            dots = new ArrayList<>();
+//                            for (DocumentSnapshot doc : task.getResult()) {
+//                                Map<String, Object> newDotData = doc.getData();
+//                                Dot newDot = new Dot(newDotData);
+//                                dots.add(newDot);
 //
-////                        Log.d(DOC_GET, "DocumentSnapshot data toObject: " + doc_dots); //task.getResult().getData().get("0").getClass().toString());
-////                        for (Object d : task.getResult().getData().values()) {
-////                            Log.d(DOC_GET, "maybe a dot: " + d.toString());
-////                        }
+////                                Log.e("Dot Object",doc.getId() + " => " + doc.getData());
+//                            }
+//
+//                            Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+//                            f.setDots(dots);
+//                            f.setPage(NUM_ITEMS);
+//                            myAdapter.notifyDataSetChanged();
+//
+//                        }
+//                        else {
+//                            Log.e("Load Fail", "Error getting documents: ", task.getException());
+//                        }
 //                    }
-//                    else {
-//                        Log.d(DOC_GET, "No such document");
-//                    }
-//                }
-//                else {
-//                    Log.d("DOC FAIL", "get failed with ", task.getException());
-//                }
-//            }
-//        });
+//                });
+
 
         // button to add more slides to the activity
         FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button);
@@ -151,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 if (dots != null) {
                     intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
                 }
+                intent.putExtra("fragNum", f.)
                 startActivityForResult(intent, EDIT_DOTS_REQUEST);
 
 
@@ -166,8 +192,31 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == EDIT_DOTS_REQUEST) {
             if (resultCode == RESULT_OK) {
                 dots = data.getParcelableArrayListExtra("DOTS");
+                Log.d("dotList", dots.toString());
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
                 f.setDots(dots);
+                Log.d("fragDotList", f.getDots().toString());
+                int fragNumInt = 0;
+
+//                db.collection("User1").document("Fragments").delete();
+//                deleteCollection()
+
+//                db.collection("User1").document("Fragments").collection()
+
+//                db.collection("User1").document("Fragments")
+//                        .delete()
+//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                            @Override
+//                            public void onSuccess(Void aVoid) {
+//                                Log.d("BYE", "Document snapshot successfully deleted");
+//                            }
+//                        })
+//                        .addOnFailureListener(new OnFailureListener() {
+//                            @Override
+//                            public void onFailure(@NonNull Exception e) {
+//                                Log.w("BAD BYE", "Error deleting document", e);
+//                            }
+//                        });
 
                 for (Fragment fr:  myAdapter.getFragment()) {
 //                    Log.d("fragment", "another fragment at page " + fr.)
@@ -175,12 +224,12 @@ public class MainActivity extends AppCompatActivity {
                     frag.updateDots(dots);
 
                     Log.v("FRAG_ID", String.valueOf(frag.getId()));
-                    int num = 0;
+                    int dotNumInt = 0;
                     for (Dot d : frag.getDots()) {
                         // Writing to fireStore
                         // Root Collection will later be named to a logged-in user ID or some other identifier
-                        String fragID = String.valueOf(num);
-                        db.collection("User0").document("Fragment " + fragID).collection("Dots").document(d.getID().toString())
+                        String fragNum = String.valueOf(fragNumInt);
+                        db.collection("User1").document("Fragments").collection("Fragment " + fragNum).document(d.getID().toString())
                                 .set(d)
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
@@ -194,14 +243,88 @@ public class MainActivity extends AppCompatActivity {
                                         Log.e(STORE_FAIL, "Error writing document", e);
                                     }
                                 });
-                        num++;
+//                        dotNum++;
                     }
+                    fragNumInt++;
                 }
+
+                Map<String, Integer> numData = new HashMap<>();
+                numData.put("num", fragNumInt);
+                db.collection("User1").document("Num Frags")
+                    .set(numData)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(STORE, "Stored the number of total fragments");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e(STORE_FAIL, "Error writing num", e);
+                            }
+                        });
+
                 myAdapter.notifyDataSetChanged();
 
             }
 
         }
+    }
+
+    /**
+     * Delete all documents in a collection. Uses an Executor to perform work on a background
+     * thread. This does *not* automatically discover and delete subcollections.
+     */
+    private Task<Void> deleteCollection(final CollectionReference collection,
+                                        final int batchSize,
+                                        Executor executor) {
+
+        // Perform the delete operation on the provided Executor, which allows us to use
+        // simpler synchronous logic without blocking the main thread.
+        return Tasks.call(executor, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Get the first batch of documents in the collection
+                Query query = collection.orderBy(FieldPath.documentId()).limit(batchSize);
+
+                // Get a list of deleted documents
+                List<DocumentSnapshot> deleted = deleteQueryBatch(query);
+
+                // While the deleted documents in the last batch indicate that there
+                // may still be more documents in the collection, page down to the
+                // next batch and delete again
+                while (deleted.size() >= batchSize) {
+                    // Move the query cursor to start after the last doc in the batch
+                    DocumentSnapshot last = deleted.get(deleted.size() - 1);
+                    query = collection.orderBy(FieldPath.documentId())
+                            .startAfter(last.getId())
+                            .limit(batchSize);
+
+                    deleted = deleteQueryBatch(query);
+                }
+
+                return null;
+            }
+        });
+
+    }
+
+    /**
+     * Delete all results from a query in a single WriteBatch. Must be run on a worker thread
+     * to avoid blocking/crashing the main thread.
+     */
+    @WorkerThread
+    private List<DocumentSnapshot> deleteQueryBatch(final Query query) throws Exception {
+        QuerySnapshot querySnapshot = Tasks.await(query.get());
+
+        WriteBatch batch = query.getFirestore().batch();
+        for (DocumentSnapshot snapshot : querySnapshot) {
+            batch.delete(snapshot.getReference());
+        }
+        Tasks.await(batch.commit());
+
+        return querySnapshot.getDocuments();
     }
 
     public void addView(Fragment newPage) {
