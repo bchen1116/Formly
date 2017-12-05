@@ -31,20 +31,23 @@ public class EditViewActivity extends AppCompatActivity {
     private ArrayList<Integer> closestColorsList = new ArrayList<>();
     float lefty, topy, righty, bottomy;
 
+    // creates editViewActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             dots = savedInstanceState.getParcelableArrayList("DOTS");
         }
+
+        // sets the colors for the dialog
         String[] colorsTxt = getApplicationContext().getResources().getStringArray(R.array.colors);
         for (int i = 0; i < colorsTxt.length; i++) {
             int newColor = Color.parseColor(colorsTxt[i]);
             closestColorsList.add(newColor);
         }
 
+        // checks if there are dots passed through and sets them if there are
         if (getIntent().getParcelableArrayListExtra("DOTS") != null) {
             dots = getIntent().getParcelableArrayListExtra("DOTS");
-//            offsetDots(dots, false);
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_view);
@@ -76,17 +79,16 @@ public class EditViewActivity extends AppCompatActivity {
 
     }
 
+    // unselects all dots
     public void clearDots() {
         for (Dot i : dots) {
             i.setSelected(false);
         }
     }
 
-
+    // auto-generated saver
     @Override
     public void onSaveInstanceState(Bundle outState) {
-//        clearDots();
-//        outState.putParcelableArrayList("DOTS", dots);
         super.onSaveInstanceState(outState);
     }
 
@@ -100,8 +102,7 @@ public class EditViewActivity extends AppCompatActivity {
         private final float SCROLL_THRESHOLD = 10;
         private boolean isOnClick, isMoving;
 
-
-
+        // opens a dialog that allows setting the name and color of the dot
         public SingleTouchEventView(Context context) {
             super(context);
             editPeople.setOnClickListener(new View.OnClickListener() {
@@ -132,13 +133,11 @@ public class EditViewActivity extends AppCompatActivity {
                         public void onDismiss() {
                         }
                     });
-
                 }
             });
         }
 
-
-
+        // draws the stage and dots and animates the dot moving
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
@@ -157,7 +156,6 @@ public class EditViewActivity extends AppCompatActivity {
             // set up paint to draw dots
             paint.setStyle(Paint.Style.FILL);
             selectPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-//            selectPaint.setColor(Color.BLUE);
             textPaint.setColor(Color.BLACK);
             textPaint.setTextAlign(Paint.Align.CENTER);
 
@@ -184,6 +182,7 @@ public class EditViewActivity extends AppCompatActivity {
             invalidate();
         }
 
+        // logic method for moving around the dots
         public boolean onTouchEvent(MotionEvent event) {
             boolean occupied = false;
             switch (event.getAction()) {
@@ -270,11 +269,6 @@ public class EditViewActivity extends AppCompatActivity {
             invalidate();
             return true;
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-//        Log.e("BAAAACCCKKK", "IT UPPPP biatch");
     }
 }
 

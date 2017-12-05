@@ -21,37 +21,47 @@ public class DotList implements Parcelable {
         private int pageNumber;
         private String comment = "";
 
+        // empty constructor
         public DotList() {
-//            dotList = new ArrayList<Dot>();
         }
+
+        // initializes a DotList obj
         public DotList(int num, List<Dot> dots, String edit) {
             this.dotList = dots;
             this.pageNumber = num;
             this.comment = edit;
         }
 
+        // creates a DotList obj from a parcel
         protected DotList(Parcel in) {
             this.pageNumber = Integer.parseInt(in.readString());
             in.readTypedList(dotList, Dot.CREATOR);
             this.comment = in.readString();
         }
 
+        // toString method
         @Override
         public String toString() {
             return String.valueOf(this.pageNumber) +" " + this.dotList.size();
         }
+
+        // returns the list of Dots in this slide
         public List<Dot> getDots() {
             return this.dotList;
         }
 
+        // returns the comments associated with this slide
         public String getComment() {
             return this.comment;
         }
+
+        // returns size of DotList
         @Override
         public int describeContents() {
-            return 0;
+            return dotList.size();
         }
 
+        // writes into the DotList obj parcel
         @Override
         public void writeToParcel(Parcel parcel, int i) {
             parcel.writeString(String.valueOf(this.pageNumber));
@@ -59,6 +69,7 @@ public class DotList implements Parcelable {
             parcel.writeString(this.comment);
         }
 
+        // necessary CREATOR method
         public static final Parcelable.Creator<DotList> CREATOR = new Parcelable.Creator<DotList>() {
             public DotList createFromParcel(Parcel in) {
                 return new DotList(in);
