@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+// represents a single set of formations
 public class MainActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -54,12 +54,16 @@ public class MainActivity extends AppCompatActivity {
     private Bundle b = null;
     public TextView pageNumbers;
 
+    // Initializes the mainActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // find the pageNumber textView
         pageNumbers = (TextView) findViewById(R.id.pageNumber);
+
+        // find if there is a bundle passed through to load
         try {
             b = getIntent().getExtras().getBundle("fragList");
         } catch (Exception e) {
@@ -67,14 +71,17 @@ public class MainActivity extends AppCompatActivity {
         }
         className = getIntent().getExtras().getString("ActivityName");
 
+        // sets the name at the top of the activity to the ActivityName
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(className);
 
+        // creates the slides
         mViewPager = (android.support.v4.view.ViewPager) findViewById(R.id.pager);
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(myAdapter);
 
+        // checks if there exists a bundle. Loads data if there is
         if (b != null) {
             savedInstanceState = b;
             className = b.getString("name");
@@ -95,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-//        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
+        // adds a slide if there are no slides on this formation
         if (NUM_ITEMS < 1) {
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
             addView(s);
@@ -159,33 +166,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // done button to end this activity and return to the start page
         Button doneButton = (Button) findViewById(R.id.button);
         doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 endSession();
             }
         });
-    }
-
-        // button to add people to the screen
-//        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.addButton1);
-//        addButton.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
-//                Intent intent = new Intent(v.getContext(), EditViewActivity.class);
-//                Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-//                dots = f.getDots();
-//                intent.putExtra("ActivityName", className);
-//                if (dots != null) {
-//                    intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
-//                }
-//                startActivityForResult(intent, EDIT_DOTS_REQUEST);
-//            }
-//        });
-//    }
-
-    public void dotsUpdate(){
-        myAdapter.notifyDataSetChanged();
     }
 
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
@@ -251,12 +238,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // adds a new slide to the viewPager
     public void addView(Fragment newPage) {
         int pageIndex = myAdapter.addView(newPage);
         // You might want to make "newPage" the currently displayed page:
         mViewPager.setCurrentItem(pageIndex, true);
     }
 
+    // auto-generated method
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -264,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // necessary method
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -279,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // returns the list of dots
     public List<Dot> getDots() {
         return dots;
     }
@@ -319,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
             return NUM_ITEMS;
         }
 
+        // gets the position for the object
         @Override
         public int getItemPosition(Object obj) {
             Slidescreen o = (Slidescreen) obj;
@@ -330,6 +322,7 @@ public class MainActivity extends AppCompatActivity {
             return POSITION_NONE;
         }
 
+        // checks if the position is valid
         public boolean validPosition(int position) {
             if (position >= 0 && position < mlist.size()){
                 return true;
@@ -351,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
         public ArrayList<Fragment> getFragment() { return mlist;}
     }
 
+    // ends the MainActivity session
     public void endSession() {
         FragList result = new FragList(this.className, this.myAdapter.getFragment());
         Intent finishing = new Intent();
@@ -358,6 +352,8 @@ public class MainActivity extends AppCompatActivity {
         setResult(RESULT_OK, finishing);
         finish();
     }
+
+    // ends session if user presses back button
     @Override
     public void onBackPressed() {
         endSession();

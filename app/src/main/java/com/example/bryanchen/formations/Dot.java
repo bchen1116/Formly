@@ -20,6 +20,7 @@ import android.support.v4.content.ContextCompat;
  * Created by BryanChen on 9/20/17.
  */
 
+// dot represents the individual dancer
 public class Dot implements Parcelable{
     static final AtomicLong NEXT_ID = new AtomicLong(0);
     private long id = NEXT_ID.getAndIncrement();
@@ -31,7 +32,7 @@ public class Dot implements Parcelable{
     private final double DEFAULT_DIAMETER = 40;
     private boolean selected;
 
-
+    // initializes the dot object at location x, y
     public Dot(float x, float y) {
         this.name = "";
         this.xLocation = x;
@@ -42,6 +43,7 @@ public class Dot implements Parcelable{
 
     }
 
+    // initializes a dot object with more parameters
     public Dot(int color, int diameter, Long id, String name, boolean selected, float x, float y) {
         this.name = name;
         this.xLocation = x;
@@ -52,6 +54,7 @@ public class Dot implements Parcelable{
         this.id = id;
     }
 
+    // dot initializer from a map object
     public Dot(Map<String, Object> data) {
         Double x = (Double) data.get("x");
         Double y = (Double) data.get("y");
@@ -68,6 +71,7 @@ public class Dot implements Parcelable{
         this.id = id.longValue();
     }
 
+    // creates a dot object from a parcel
     private Dot(Parcel in) {
         this.name = in.readString();
         this.xLocation = Float.parseFloat(in.readString());
@@ -77,12 +81,15 @@ public class Dot implements Parcelable{
         this.id = Long.parseLong(in.readString());
         this.selected = Boolean.parseBoolean(in.readString());
     }
+
+    // auto-generated method
     @Override
     public int describeContents() {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    // writes dot obj into parcel
     @Override
     public void writeToParcel(Parcel dest, int flags) {
 
@@ -96,6 +103,7 @@ public class Dot implements Parcelable{
 
     }
 
+    // included CREATOR method
     public static final Parcelable.Creator<Dot> CREATOR = new Parcelable.Creator<Dot>() {
         public Dot createFromParcel(Parcel in) {
             return new Dot(in);
@@ -106,55 +114,70 @@ public class Dot implements Parcelable{
 
         }
     };
+
+    // sets the name of the dot
     public void setName(String name) {
         this.name = name;
     }
 
+    // sets the location of the dot
     public void setLocation(float x, float y) {
         this.xLocation = x;
         this.yLocation = y;
     }
 
+    // sets the color of the dot
     public void setColor(int color) {
         this.color = color;
     }
 
+    // sets the diameter of the dot
     public void setDiameter(double diam) {
         this.diameter = diam;
     }
 
+    // resets the diameter of the dot
     public void setDefaultDiameter() {
         this.diameter = DEFAULT_DIAMETER;
     }
 
+    // sets the dot as selected
     public void setSelected(boolean select) {
         this.selected = select;
     }
 
+    // returns the name of the dot
     public String getName() {
         return this.name;
     }
 
+    // returns the x location of the dot
     public float getX() {
         return this.xLocation;
     }
 
+    // returns the y location of the dot
     public float getY() {
         return this.yLocation;
     }
 
+    // returns the color of the dot
     public int getColor() {
         return this.color;
     }
 
+    // returns the diameter of the dot
     public double getDiameter() {
         return this.diameter;
     }
 
+    // returns the unique ID of the dot
     public Long getID() {return this.id; }
 
+    // returns if the dot is selected
     public boolean isSelected() { return this.selected;}
 
+    // checks if the x, y location overlaps the dot
     public boolean isHit(float x, float y) {
         float dx = x-this.getX();
         float dy = y-this.getY();
@@ -162,14 +185,10 @@ public class Dot implements Parcelable{
         return length <= 2*diameter;
     }
 
+    // toString method for the dot
     @Override
     public String toString(){
         return this.name + " at location " + "(" + this.xLocation + ", " + this.yLocation + ")";
     }
-//    public boolean inBounds(float top, float bottom, float left, float right) {
-//        Boolean vertical = this.yLocation >= top && this.yLocation <= bottom;
-//        Boolean horizontal = this.xLocation >= left && this.xLocation <= right;
-//        return vertical && horizontal;
-//    }
 
 }

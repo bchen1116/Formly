@@ -21,8 +21,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
+// Slidescreen represents a single page in the formation
 public class Slidescreen extends Fragment{
     private List<Dot> dots = new ArrayList<>();
     public int page;
@@ -40,7 +39,7 @@ public class Slidescreen extends Fragment{
         // Required empty public constructor
     }
 
-
+    // creates the slidescreen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -66,6 +65,7 @@ public class Slidescreen extends Fragment{
             }
         });
 
+        // sets a click listener for the slide
         s.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,7 +86,6 @@ public class Slidescreen extends Fragment{
                 }
                 if (inRange(x, y)) {
                     Intent goingToEdit = new Intent(getActivity(), EditViewActivity.class);
-//                    offsetDots(dots, true);
                     goingToEdit.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
                     getActivity().startActivityForResult(goingToEdit, MainActivity.EDIT_DOTS_REQUEST);
                 }
@@ -118,32 +117,39 @@ public class Slidescreen extends Fragment{
         return rootView;
     }
 
+    // sets the dots for this slide
     public ViewGroup setDots(List<Dot> d) {
         dots = d;
         return rootView;
     }
 
+    // sets the page number of the slide
     public void setPage(int page) {
         this.page = page;
     }
 
+    // returns the page number associated with the slide
     public int getPage() {
         return this.page;
     }
 
+    // sets the comments for the slide
     public void setComments(String comments) {
         this.comments = comments;
     }
 
+    // updates the comments from the editText
     public void updateComments() {
         this.comments = inputEdit.getText().toString();
     }
 
+    // gets the comments associated with the slidescreen
     public String getComments() {
         Log.e("THESE COMMENTS", this.comments);
         return this.comments;
     }
 
+    // updates the dot names
     public void updateDots(List<Dot> d) {
         if (dots != null) {
             for (Dot dot: d) {
@@ -156,10 +162,12 @@ public class Slidescreen extends Fragment{
         }
     }
 
+    // returns the list of dots associated with the slide
     public List<Dot> getDots() {
         return dots;
     }
 
+    // makes all of the dots unselected
     public List<Dot> clearSelected(List<Dot> dots) {
         for (Dot i : dots) {
             i.setSelected(false);
@@ -167,36 +175,38 @@ public class Slidescreen extends Fragment{
         return dots;
     }
 
+    // saves the instance state
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("curChoice", page);
     }
 
+    // creates a new instance of Slidescreen
     public Slidescreen newInstance(String key, int p) {
         Slidescreen fragment = new Slidescreen();
-//        Bundle args = new Bundle();
-//        args.putInt(key, p);
-//        fragment.setArguments(args);
         this.page = p;
-//        onSaveInstanceState(args);
         return fragment;
     }
 
+    // class to allow drawing in the slide
     public class drawView extends View {
         Paint paint = new Paint();
         private Paint textPaint = new Paint();
 
+        // initializes drawView
         public drawView(Context context) {
             super(context);
             this.setWillNotDraw(false);
         }
 
+        // sets a dimension for the canvas
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             setMeasuredDimension(1050, 1500);
         }
 
+        // draws out the dots and the stage on the slide
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
@@ -228,19 +238,17 @@ public class Slidescreen extends Fragment{
         }
     }
 
+    // return the page that this slide is on
     public int getInt() {
         return this.page;
     }
 
+    // checks if the x and y positions are in range of the stage
     public boolean inRange(float x, float y) {
         return x > 10 && x < 1000 && y < 1200 && y > 10;
     }
 
-    public DotList getDotList() {
-        Log.e("GETDOTLIST", this.comments);
-        return new DotList(this.page, this.getDots(), this.comments);
-    }
-
+    // checks if comments have been written
     public void onBackPressed() {
         this.comments = inputEdit.getText().toString();
     }

@@ -18,6 +18,7 @@ public class FragList implements Parcelable {
     public List<DotList> fragList = new ArrayList<>();
     public String activityName;
 
+    // initialize a FragList object
     public FragList(String name, ArrayList<Fragment> frags) {
         this.slides = frags;
         Log.e("fragss", slides.size()+"");
@@ -30,6 +31,7 @@ public class FragList implements Parcelable {
         this.activityName = name;
     }
 
+    // initialize a FragList object with a parcel
     protected FragList(Parcel in) {
         this.activityName = in.readString();
         List<DotList> fList = new ArrayList<>();
@@ -37,29 +39,36 @@ public class FragList implements Parcelable {
         fragList = fList;
     }
 
+    // returns the activity name of the formations associated
     public String getActivityName() {
         return this.activityName;
     }
 
+    // returns the list of DotLists associated with these formations
     public ArrayList<DotList> getDots() {
         return (ArrayList) this.fragList;
     }
+
+    // toString method to help distinguish these FragLists. Mainly for debugging
     @Override
     public String toString() {
         return String.valueOf(this.activityName) +" " + this.fragList.size();
     }
 
+    // returns the number of slides that this formation group has
     @Override
     public int describeContents() {
         return this.fragList.size();
     }
 
+    // writes a parcel with the necessary information
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(this.activityName);
         parcel.writeTypedList(this.fragList);
     }
 
+    // necessary CREATOR method
     public static final Parcelable.Creator<FragList> CREATOR = new Parcelable.Creator<FragList>() {
         public FragList createFromParcel(Parcel in) {
             return new FragList(in);

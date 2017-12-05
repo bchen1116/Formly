@@ -1,25 +1,18 @@
 package com.example.bryanchen.formations;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,10 +24,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import static java.security.AccessController.getContext;
-
+// page that contains all of the different formations
 public class StartPage extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     public int numLoadedFrags = 0;
     private int GET_MAIN_REQUEST = 15;
     private ArrayList<FragList> mains = new ArrayList<>();
@@ -42,10 +35,12 @@ public class StartPage extends AppCompatActivity {
     private formationsAdapter mAdapter;
     String name = "";
 
+    // creates the StartPage
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
+
         db.collection("User1").document("Num Frags")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -78,12 +73,7 @@ public class StartPage extends AppCompatActivity {
                     }
                 });
 
-        ImageView imageView = (ImageView) findViewById(R.id.titlePage);
-        imageView.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.logo));
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
+        // add button to add a new formation
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,6 +83,7 @@ public class StartPage extends AppCompatActivity {
         });
         recycle = (RecyclerView) findViewById(R.id.recycler);
 
+        // launches the formation clicked from the recyclerView
         mAdapter = new formationsAdapter(new formationsAdapter.OnItemClicked() {
             @Override
             public void onItemClick(int position) {
@@ -107,7 +98,6 @@ public class StartPage extends AppCompatActivity {
                 startActivityForResult(mainIntent, GET_MAIN_REQUEST);
             }
         }, mains);
-//        mAdapter.setOnClick(this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recycle.setLayoutManager(mLayoutManager);
         recycle.setItemAnimator(new DefaultItemAnimator());
@@ -115,10 +105,12 @@ public class StartPage extends AppCompatActivity {
         recycle.setAdapter(mAdapter);
     }
 
+    // updates the number of loaded frags
     public void updateNumFrags(int num) {
         numLoadedFrags = num;
     }
 
+    // creates a dialog and allows activity to launch
     private void createAndDisplayDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LinearLayout layout = new LinearLayout(this);
@@ -134,11 +126,12 @@ public class StartPage extends AppCompatActivity {
 
         builder.setView(layout);
 
+        // cancel
         builder.setNegativeButton("Cancel", (dialog, which) -> {
-            Toast.makeText(this, "Cancel clicked", Toast.LENGTH_SHORT).show();
             dialog.cancel();
         });
 
+        // if ok is pressed, creates a new formation
         builder.setPositiveButton("Done", (dialog, which) -> {
             name = etInput.getText().toString();
             if (!hasName(name)) {
@@ -154,6 +147,7 @@ public class StartPage extends AppCompatActivity {
         builder.create().show();
     }
 
+    // adds the formation if it's new, otherwise updates it
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == GET_MAIN_REQUEST && resultCode == RESULT_OK) {
             Boolean added = false;
@@ -174,6 +168,7 @@ public class StartPage extends AppCompatActivity {
 
     }
 
+    // checks if the new name exists in the current list of formations
     private boolean hasName(String name) {
         for (int i = 0; i<mains.size(); i++) {
             if (mains.get(i).getActivityName().equals(name)){
