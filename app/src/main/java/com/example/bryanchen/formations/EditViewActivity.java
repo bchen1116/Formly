@@ -33,7 +33,6 @@ public class EditViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             dots = savedInstanceState.getParcelableArrayList("DOTS");
-//            offsetDots(dots, false);
         }
         String[] colorsTxt = getApplicationContext().getResources().getStringArray(R.array.colors);
         for (int i = 0; i < colorsTxt.length; i++) {
@@ -84,8 +83,8 @@ public class EditViewActivity extends AppCompatActivity {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        clearDots();
-        outState.putParcelableArrayList("DOTS", dots);
+//        clearDots();
+//        outState.putParcelableArrayList("DOTS", dots);
         super.onSaveInstanceState(outState);
     }
 

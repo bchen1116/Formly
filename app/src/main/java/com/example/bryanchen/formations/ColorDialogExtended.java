@@ -130,6 +130,7 @@ public class ColorDialogExtended extends ColorPickerDialog{
         l.addView(input);
         View view = LayoutInflater.from(getActivity()).inflate(com.savvisingh.colorpickerdialog.R.layout.color_picker_dialog, null);
         l.addView(view);
+        l.setGravity(View.TEXT_ALIGNMENT_CENTER);
         mProgress = (ProgressBar) view.findViewById(android.R.id.progress);
         mPalette = (ColorPickerPalette) view.findViewById(com.savvisingh.colorpickerdialog.R.id.color_picker);
         mPalette.init(mSize, mColumns, this);

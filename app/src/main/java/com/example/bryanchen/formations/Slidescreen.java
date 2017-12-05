@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
+import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +28,14 @@ public class Slidescreen extends Fragment{
     public int page;
     ViewGroup rootView;
     drawView s;
+    private String comments="";
     //    static final int EDIT_DOTS_REQUEST = 12;
     MotionEvent e;
     boolean hasMotion;
     // class member variable to save the X,Y coordinates
     private float[] lastTouchDownXY = new float[2];
+    private EditText inputEdit;
+
     public Slidescreen() {
         // Required empty public constructor
     }
@@ -43,20 +48,20 @@ public class Slidescreen extends Fragment{
                 R.layout.fragment_slidescreen, container, false);
 
         s = new drawView(getActivity());
-
+        inputEdit = new EditText(getActivity());
 
         // the purpose of the touch listener is just to store the touch X,Y coordinates
         s.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 hasMotion = false;
-                Log.e("HAS BEEN TOUCHED", "TRUEEEEE");
                 // save the X,Y coordinates
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     lastTouchDownXY[0] = event.getX();
                     lastTouchDownXY[1] = event.getY();
                 }
                 // let the touch event pass on to whoever needs it
+                comments = inputEdit.getText().toString();
                 return false;
             }
         });
@@ -69,18 +74,17 @@ public class Slidescreen extends Fragment{
                 float x = lastTouchDownXY[0];
                 float y = lastTouchDownXY[1];
                 Dot selectedDot = null;
-                Boolean hit = false;
                 // use the coordinates to find the dot selected, if any
                 if(dots.size()>0){
                     for (Dot d:dots) {
                         if (d.isHit(x-10, y-10)) {
-                            hit = true;
+//                            hit = true;
                             dots = clearSelected(dots);
                             d.setSelected(true);
                         }
                     }
                 }
-                if (hit && inRange(x, y)) {
+                if (inRange(x, y)) {
                     Intent goingToEdit = new Intent(getActivity(), EditViewActivity.class);
 //                    offsetDots(dots, true);
                     goingToEdit.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
@@ -92,22 +96,52 @@ public class Slidescreen extends Fragment{
 
         ViewGroup linear = (ViewGroup) rootView.findViewById(R.id.linear);
         final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
-        EditText inputEdit = new EditText(getActivity());
         inputEdit.setLayoutParams(lparams);
         inputEdit.setHint("Comments:");
+        inputEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus){
+                    Toast.makeText(getContext(), "on focus", Toast.LENGTH_LONG).show();
+                }else {
+                    Toast.makeText(getContext(), "lost focus", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
         linear.addView(s);
         linear.addView(inputEdit);
+        if (comments.equals("")) {
+            comments = inputEdit.getText().toString();
+        } else {
+            inputEdit.setText(this.comments);
+        }
         return rootView;
     }
 
     public ViewGroup setDots(List<Dot> d) {
         dots = d;
-//        offsetDots(dots, false);
         return rootView;
     }
 
     public void setPage(int page) {
         this.page = page;
+    }
+
+    public int getPage() {
+        return this.page;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    public void updateComments() {
+        this.comments = inputEdit.getText().toString();
+    }
+
+    public String getComments() {
+        Log.e("THESE COMMENTS", this.comments);
+        return this.comments;
     }
 
     public void updateDots(List<Dot> d) {
@@ -121,18 +155,6 @@ public class Slidescreen extends Fragment{
             }
         }
     }
-
-//    public void offsetDots(List<Dot> dotted, boolean isSaving) {
-//        if (isSaving) {
-//            for (Dot d: dotted) {
-//                d.setLocation(d.getX()-10, d.getY()-10);
-//            }
-//        } else {
-//            for (Dot d: dotted) {
-//                d.setLocation(d.getX()+10, d.getY()+10);
-//            }
-//        }
-//    }
 
     public List<Dot> getDots() {
         return dots;
@@ -153,11 +175,11 @@ public class Slidescreen extends Fragment{
 
     public Slidescreen newInstance(String key, int p) {
         Slidescreen fragment = new Slidescreen();
-        Bundle args = new Bundle();
-        args.putInt(key, p);
-        fragment.setArguments(args);
+//        Bundle args = new Bundle();
+//        args.putInt(key, p);
+//        fragment.setArguments(args);
         this.page = p;
-        onSaveInstanceState(args);
+//        onSaveInstanceState(args);
         return fragment;
     }
 
@@ -174,10 +196,6 @@ public class Slidescreen extends Fragment{
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             setMeasuredDimension(1050, 1500);
         }
-
-//        public boolean onLongClick(View view) {
-//            return false;
-//        }
 
         @Override
         protected void onDraw(Canvas canvas) {
@@ -219,43 +237,11 @@ public class Slidescreen extends Fragment{
     }
 
     public DotList getDotList() {
-        return new DotList(this.page, this.dots);
+        Log.e("GETDOTLIST", this.comments);
+        return new DotList(this.page, this.getDots(), this.comments);
     }
 
-//    public class DotList implements Parcelable {
-//        public List<Dot> dotList;
-//        public int pageNumber;
-//
-//        public DotList(int num, List<Dot> dots) {
-//            this.dotList = dots;
-//            this.pageNumber = num;
-//        }
-//
-//        protected DotList(Parcel in) {
-//            this.pageNumber = Integer.parseInt(in.readString());
-//            in.readTypedList(dotList, Dot.CREATOR);
-//        }
-//
-//        @Override
-//        public int describeContents() {
-//            return 0;
-//        }
-//
-//        @Override
-//        public void writeToParcel(Parcel parcel, int i) {
-//            parcel.writeString(String.valueOf(this.pageNumber));
-//            parcel.writeTypedList(dotList);
-//        }
-//
-//        public final Parcelable.Creator<DotList> CREATOR = new Parcelable.Creator<DotList>() {
-//            public DotList createFromParcel(Parcel in) {
-//                return new DotList(in);
-//            }
-//
-//            public DotList[] newArray(int size) {
-//                return new DotList[size];
-//            }
-//        };
-//
-//    }
+    public void onBackPressed() {
+        this.comments = inputEdit.getText().toString();
+    }
 }
