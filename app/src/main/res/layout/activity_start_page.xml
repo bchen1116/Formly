@@ -25,10 +25,20 @@
         android:layout_width="match_parent"
         android:layout_height="420dp"
         android:layout_gravity="center"
+        android:layout_marginTop="0dp"
         android:id="@+id/recycler"
         android:scrollbars="vertical"
         android:fadeScrollbars="true"
-        app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        android:background="@color/colorPrimary"/>
+
+    <TextView
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:visibility="gone"
+        android:text="No Formations!" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

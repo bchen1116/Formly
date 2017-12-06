@@ -38,6 +38,7 @@ public class StartPage extends AppCompatActivity {
     private ArrayList<FragList> mains = new ArrayList<>();
     private RecyclerView recycle;
     private formationsAdapter mAdapter;
+    private TextView emptyView;
     String name = "";
 
     // creates the StartPage
@@ -77,12 +78,7 @@ public class StartPage extends AppCompatActivity {
                     }
                 }
             });
-
-//        TextView startText = (TextView) findViewById(R.id.titlePage);
-//        startText.setText("FormLy");
-//        startText.setTextSize(60);
-//        startText.setGravity(Gravity.CENTER);
-
+        
         // add button to add a new formation
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -92,6 +88,7 @@ public class StartPage extends AppCompatActivity {
             }
         });
         recycle = (RecyclerView) findViewById(R.id.recycler);
+        emptyView = (TextView) findViewById(R.id.empty_view);
 
         // launches the formation clicked from the recyclerView
         mAdapter = new formationsAdapter(new formationsAdapter.OnItemClicked() {
@@ -108,7 +105,16 @@ public class StartPage extends AppCompatActivity {
                 startActivityForResult(mainIntent, GET_MAIN_REQUEST);
             }
         }, mains);
+        if (mains.isEmpty()) {
+            recycle.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        }
+        else {
+            recycle.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+        }
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recycle.getBackground().setAlpha(25);
         recycle.setLayoutManager(mLayoutManager);
         recycle.setItemAnimator(new DefaultItemAnimator());
         recycle.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
@@ -160,20 +166,18 @@ public class StartPage extends AppCompatActivity {
 
     // adds the formation if it's new, otherwise updates it
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        recycle.setVisibility(View.VISIBLE);
+        emptyView.setVisibility(View.GONE);
         if (requestCode == GET_MAIN_REQUEST && resultCode == RESULT_OK) {
-            Boolean added = false;
             Log.e("the result OK", data.toString());
             FragList f = data.getExtras().getParcelable("FINAL");
             for (int i = 0; i < mains.size(); i++) {
                 Log.e(mains.get(i).getActivityName(), f.getActivityName());
                 if (mains.get(i).getActivityName().equals(f.getActivityName())) {
-                    mains.set(i, f);
-                    added = true;
+                    mains.remove(i);
                 }
             }
-            if (!added) {
-                mains.add(f);
-            }
+            mains.add(0, f);
         }
         mAdapter.notifyDataSetChanged();
 

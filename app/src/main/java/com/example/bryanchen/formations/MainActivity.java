@@ -3,6 +3,8 @@ package com.example.bryanchen.formations;
 import android.support.annotation.NonNull;
 import android.support.annotation.WorkerThread;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.ViewPager;
+import android.view.MotionEvent;
 import android.view.View;
 import android.os.Bundle;
 
@@ -38,6 +40,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
+import static android.view.MotionEvent.ACTION_DOWN;
+import static android.view.MotionEvent.ACTION_UP;
+
 // represents a single set of formations
 public class MainActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -60,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar mActionBarToolbar;
     private Bundle b = null;
     public TextView pageNumbers;
+    private ViewPager.OnPageChangeListener onPageChangeListener;
 
     // Initializes the mainActivity
     @Override
@@ -91,6 +97,45 @@ public class MainActivity extends AppCompatActivity {
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(myAdapter);
 
+//        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//                Log.e("onPageScrolled" , " "+ position);
+//                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+//
+//            }
+//
+//            @Override
+//            public void onPageSelected(int position) {
+//                Log.e("onPageSelected" , " "+ position);
+//
+//                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//                Log.e("onPageSSC" , " "+ state);
+//                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+//
+//            }
+//        });
+//        mViewPager.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View view, MotionEvent motionEvent) {
+//                switch (motionEvent.getAction()) {
+//
+////                    case ACTION_DOWN:
+////                        pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+////                    case ACTION_UP:
+////                        pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+//                    default:
+//                        Log.e("Are we touching" , "yes we are");
+//                        pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+//                }
+//                return true;
+//            }
+//        });
+
         // checks if there exists a bundle. Loads data if there is
         if (b != null) {
             savedInstanceState = b;
@@ -111,15 +156,46 @@ public class MainActivity extends AppCompatActivity {
             mViewPager.setCurrentItem(0, true);
 
         }
+        onPageChangeListener = new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                Log.e("onPageScrolled" , " "+ position);
+                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
 
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Log.e("onPageSelected" , " "+ position);
+
+                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                Log.e("onPageSSC" , " "+ state);
+                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+
+            }
+        };
+
+        mViewPager.addOnPageChangeListener(onPageChangeListener);
         // adds a slide if there are no slides on this formation
         if (NUM_ITEMS < 1) {
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
             addView(s);
             NUM_ITEMS++;
-            pageNumbers.setText(NUM_ITEMS + " of " + NUM_ITEMS);
+            onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
             myAdapter.notifyDataSetChanged();
         }
+        mViewPager.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
+            }
+        });
 
 //        DocumentReference docRef = db.collection("User0")
 
@@ -160,7 +236,8 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
 
-        
+
+
 //        CollectionReference collectionRef = db.collection("User1").document("Fragment 0").collection("Dots");
 //        collectionRef.get()
 //                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -198,7 +275,10 @@ public class MainActivity extends AppCompatActivity {
                     Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
                     s.setDots(dots);
                     NUM_ITEMS++;
+                    pageNumbers.setText(NUM_ITEMS+" of "+ NUM_ITEMS);
                     addView(s);
+                    onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
+
                     myAdapter.notifyDataSetChanged();
                 } else {
                     Toast.makeText(getApplicationContext(), "Add people first!", Toast.LENGTH_SHORT).show();
@@ -226,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
                 endSession();
             }
         });
+
     }
 
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
@@ -412,7 +493,7 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
-    private class TabsPagerAdapter extends SmartFragmentStatePagerAdapter {
+    private class TabsPagerAdapter extends SmartFragmentStatePagerAdapter implements View.OnTouchListener {
         ArrayList<Fragment> mlist = new ArrayList<>();
 
         public TabsPagerAdapter(FragmentManager fm) {
@@ -429,6 +510,11 @@ public class MainActivity extends AppCompatActivity {
             mlist.add(position, f);
             myAdapter.notifyDataSetChanged();
             return position;
+        }
+
+        public boolean onTouch(View v, MotionEvent e) {
+            Log.e("did we touch",e.toString());
+            return true;
         }
 
         // Returns total number of pages

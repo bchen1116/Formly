@@ -21,6 +21,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.min;
+
 // Slidescreen represents a single page in the formation
 public class Slidescreen extends Fragment{
     private List<Dot> dots = new ArrayList<>();
@@ -97,16 +99,7 @@ public class Slidescreen extends Fragment{
         final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
         inputEdit.setLayoutParams(lparams);
         inputEdit.setHint("Comments:");
-        inputEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus){
-                    Toast.makeText(getContext(), "on focus", Toast.LENGTH_LONG).show();
-                }else {
-                    Toast.makeText(getContext(), "lost focus", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
+
         linear.addView(s);
         linear.addView(inputEdit);
         if (comments.equals("")) {
@@ -231,7 +224,16 @@ public class Slidescreen extends Fragment{
                     float xLoc = p.getX()+10;
                     float yLoc = p.getY()+10;
                     canvas.drawCircle(xLoc, yLoc, (float) p.getDiameter(), paint);
-                    canvas.drawText(p.getName(), xLoc, yLoc, textPaint);
+                    String tempName = "";
+                    if (p.getName().length() > 0) {
+                        String[] temp = p.getName().split(" ");
+                        if (temp.length > 1) {
+                            tempName = temp[0].substring(0, 1) + temp[1].substring(0, 1);
+                        } else {
+                            tempName = temp[0].substring(0, min(2, temp[0].length()));
+                        }
+                    }
+                    canvas.drawText(tempName, xLoc, yLoc, textPaint);
                 }
                 invalidate();
             }

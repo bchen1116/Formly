@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.graphics.Canvas;
 import android.view.View;
@@ -19,6 +20,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static java.lang.Math.min;
 
 public class EditViewActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -162,12 +165,12 @@ public class EditViewActivity extends AppCompatActivity {
             // drawing dots
             for (Dot p : dots) {
                 paint.setColor(p.getColor());
-                int size = p.getName().length();
-                if (size > 0) {
-                    textPaint.setTextSize(26 - 3 * size / 4);
-                } else {
-                    textPaint.setTextSize(10f);
-                }
+//                int size = p.getName().length();
+//                if (size > 0) {
+//                    textPaint.setTextSize(26 - 3 * size / 4);
+//                } else {
+                textPaint.setTextSize(26);
+//                }
                 if (p.isSelected()) {
                     editPeople.setVisibility(VISIBLE);
                     selectedDot = p;
@@ -177,7 +180,19 @@ public class EditViewActivity extends AppCompatActivity {
                 } else {
                     canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter(), paint);
                 }
-                canvas.drawText(p.getName(), p.getX()+lefty, p.getY()+topy, textPaint);
+                String tempName = "";
+                Log.e("string name", p.getName());
+                if (p.getName().length() > 0) {
+                    Log.e("we in loop", "yay");
+                    String[] temp = p.getName().split(" ");
+                    Log.e("here's temp", temp[0]);
+                    if (temp.length > 1) {
+                        tempName = temp[0].substring(0, 1) + temp[1].substring(0, 1);
+                    } else {
+                        tempName = temp[0].substring(0, min(2, temp[0].length()));
+                    }
+                }
+                canvas.drawText(tempName, p.getX()+lefty, p.getY()+topy, textPaint);
             }
             invalidate();
         }
