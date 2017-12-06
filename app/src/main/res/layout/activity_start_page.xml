@@ -40,15 +40,42 @@
         android:visibility="gone"
         android:text="No Formations!" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Formation"
+        android:layout_marginBottom="80dp"
+        app:layout_anchor="@id/fab"
+        app:layout_anchorGravity="center"/>
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="262dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_margin="@dimen/fab_margin"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="16dp"
         app:srcCompat="@android:drawable/ic_menu_add"
         android:background="@color/iguana"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scan QR"
+        android:layout_marginBottom="80dp"
+        app:layout_anchor="@id/camera"
+        app:layout_anchorGravity="center"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/camera"
+        android:layout_width="262dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="30dp"
+        android:background="@color/iguana"
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="right|bottom"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
 
 
     <include layout="@layout/content_start_page"

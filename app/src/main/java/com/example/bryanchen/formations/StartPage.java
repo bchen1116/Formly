@@ -1,6 +1,8 @@
 package com.example.bryanchen.formations;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -11,17 +13,25 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.IOException;
+import java.security.Security;
 import java.util.ArrayList;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -40,12 +50,16 @@ public class StartPage extends AppCompatActivity {
     private formationsAdapter mAdapter;
     private TextView emptyView;
     String name = "";
+    private final int CAMERACODE = 5;
+    private ImageView QRshow;
 
     // creates the StartPage
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
+
+        QRshow = findViewById(R.id.QRview);
 
         db.collection("User1").document("Num Frags")
             .get()
@@ -89,6 +103,16 @@ public class StartPage extends AppCompatActivity {
         });
         recycle = (RecyclerView) findViewById(R.id.recycler);
         emptyView = (TextView) findViewById(R.id.empty_view);
+
+        // brings up camera to scan
+        FloatingActionButton camera = (FloatingActionButton) findViewById(R.id.camera);
+        camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent cameraIntent = new Intent(StartPage.this, Camera.class);
+                startActivityForResult(cameraIntent, CAMERACODE);
+            }
+        });
 
         // launches the formation clicked from the recyclerView
         mAdapter = new formationsAdapter(new formationsAdapter.OnItemClicked() {
@@ -152,7 +176,10 @@ public class StartPage extends AppCompatActivity {
             name = etInput.getText().toString();
             if (!hasName(name)) {
                 Toast.makeText(getApplicationContext(), "This formation name already exists!", Toast.LENGTH_SHORT).show();
-            } else {
+            } else if(name.length() == 0) {
+                Toast.makeText(getApplicationContext(), "Needs a name!", Toast.LENGTH_SHORT).show();
+            }
+            else {
                 Toast.makeText(StartPage.this, "Creating new formations", Toast.LENGTH_SHORT).show();
                 Intent creatingIntent = new Intent(getApplicationContext(), MainActivity.class);
                 creatingIntent.putExtra("ActivityName", name);
@@ -169,17 +196,18 @@ public class StartPage extends AppCompatActivity {
         recycle.setVisibility(View.VISIBLE);
         emptyView.setVisibility(View.GONE);
         if (requestCode == GET_MAIN_REQUEST && resultCode == RESULT_OK) {
-            Log.e("the result OK", data.toString());
             FragList f = data.getExtras().getParcelable("FINAL");
             for (int i = 0; i < mains.size(); i++) {
-                Log.e(mains.get(i).getActivityName(), f.getActivityName());
                 if (mains.get(i).getActivityName().equals(f.getActivityName())) {
                     mains.remove(i);
                 }
             }
             mains.add(0, f);
+            mAdapter.notifyDataSetChanged();
+        } else if (requestCode == CAMERACODE && resultCode == RESULT_OK) {
+            Log.e("WE COOL", data.getExtras().getString("work"));
         }
-        mAdapter.notifyDataSetChanged();
+
 
     }
 
@@ -192,4 +220,9 @@ public class StartPage extends AppCompatActivity {
         }
         return true;
     }
+
+//    public void setQR() {
+//        QRshow.setImageDrawable(getResources().getDrawable(R.drawable.ic_logo));
+//        QRshow.setVisibility(View.VISIBLE);
+//    }
 }

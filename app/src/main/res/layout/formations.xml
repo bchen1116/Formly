@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:backgroundTint="@color/silver"
+    android:id="@+id/formationRelative"
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical"
@@ -13,8 +14,9 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:textColor="@color/colorPrimary"
         android:textSize="24dp"
@@ -26,5 +28,29 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/title"
         android:textColor="@color/iguana" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:layout_toRightOf="@+id/pages"
+        android:text=" pages"
+        android:textColor="@color/iguana" />
+
+    <ImageView
+        android:layout_width="360dp"
+        android:layout_height="360dp"
+        android:id="@+id/QRview"
+        android:src = "@drawable/logo"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@color/iguana"
+        android:id="@+id/QRbutton"/>
 
 </RelativeLayout>

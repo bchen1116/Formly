@@ -21,7 +21,6 @@ public class FragList implements Parcelable {
     // initialize a FragList object
     public FragList(String name, ArrayList<Fragment> frags) {
         this.slides = frags;
-        Log.e("fragss", slides.size()+"");
         for (Fragment d: frags) {
             Slidescreen r = (Slidescreen) d;
             r.updateComments();

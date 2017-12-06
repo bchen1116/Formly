@@ -159,22 +159,18 @@ public class MainActivity extends AppCompatActivity {
         onPageChangeListener = new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.e("onPageScrolled" , " "+ position);
-                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+                pageNumbers.setText(mViewPager.getCurrentItem()+1+" of "+ NUM_ITEMS);
 
             }
 
             @Override
             public void onPageSelected(int position) {
-                Log.e("onPageSelected" , " "+ position);
-
-                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+                pageNumbers.setText(mViewPager.getCurrentItem()+1+" of "+ NUM_ITEMS);
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Log.e("onPageSSC" , " "+ state);
-                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
+                pageNumbers.setText(mViewPager.getCurrentItem()+1+" of "+ NUM_ITEMS);
 
             }
         };
@@ -225,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                                     s.setDots(dots);
 
                                     NUM_ITEMS++;
-                                    myAdapter.addView(s, currentFragNum);
+                                    myAdapter.addView(s);
                                 }
 
                                 myAdapter.notifyDataSetChanged();
@@ -291,18 +287,7 @@ public class MainActivity extends AppCompatActivity {
         doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                Toast.makeText(getApplicationContext(), "Adding people mode", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(v.getContext(), EditViewActivity.class);
-                Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                dots = f.getDots();
-
-                if (dots != null) {
-                    intent.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
-                }
-//                intent.putExtra("fragNum", f.) TODO
-                startActivityForResult(intent, EDIT_DOTS_REQUEST);
-
-
+                Toast.makeText(getApplicationContext(), "Exiting", Toast.LENGTH_SHORT).show();
                 endSession();
             }
         });
@@ -313,10 +298,8 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == EDIT_DOTS_REQUEST) {
             if (resultCode == RESULT_OK) {
                 dots = data.getParcelableArrayListExtra("DOTS");
-                Log.d("dotList", dots.toString());
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
                 f.setDots(dots);
-                Log.d("fragDotList", f.getDots().toString());
                 int fragNumInt = 0;
 
 //                db.collection("User1").document("Fragments").delete();

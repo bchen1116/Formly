@@ -133,7 +133,9 @@ public class Slidescreen extends Fragment{
 
     // updates the comments from the editText
     public void updateComments() {
-        this.comments = inputEdit.getText().toString();
+        if (inputEdit != null) {
+            this.comments = inputEdit.getText().toString();
+        }
     }
 
     // gets the comments associated with the slidescreen
@@ -215,12 +217,7 @@ public class Slidescreen extends Fragment{
             if (dots != null) {
                 for (Dot p : dots) {
                     paint.setColor(p.getColor());
-                    int size = p.getName().length();
-                    if (size > 0){
-                        textPaint.setTextSize(26 - 3*size/4);
-                    } else {
-                        textPaint.setTextSize(25f);
-                    }
+                    textPaint.setTextSize(30);
                     float xLoc = p.getX()+10;
                     float yLoc = p.getY()+10;
                     canvas.drawCircle(xLoc, yLoc, (float) p.getDiameter(), paint);
@@ -252,6 +249,6 @@ public class Slidescreen extends Fragment{
 
     // checks if comments have been written
     public void onBackPressed() {
-        this.comments = inputEdit.getText().toString();
+        updateComments();
     }
 }

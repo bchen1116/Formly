@@ -169,7 +169,7 @@ public class EditViewActivity extends AppCompatActivity {
 //                if (size > 0) {
 //                    textPaint.setTextSize(26 - 3 * size / 4);
 //                } else {
-                textPaint.setTextSize(26);
+                textPaint.setTextSize(30);
 //                }
                 if (p.isSelected()) {
                     editPeople.setVisibility(VISIBLE);
@@ -181,13 +181,10 @@ public class EditViewActivity extends AppCompatActivity {
                     canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter(), paint);
                 }
                 String tempName = "";
-                Log.e("string name", p.getName());
                 if (p.getName().length() > 0) {
-                    Log.e("we in loop", "yay");
                     String[] temp = p.getName().split(" ");
-                    Log.e("here's temp", temp[0]);
                     if (temp.length > 1) {
-                        tempName = temp[0].substring(0, 1) + temp[1].substring(0, 1);
+                        tempName = temp[0].substring(0, 1).toUpperCase() + temp[1].substring(0, 1).toUpperCase();
                     } else {
                         tempName = temp[0].substring(0, min(2, temp[0].length()));
                     }
