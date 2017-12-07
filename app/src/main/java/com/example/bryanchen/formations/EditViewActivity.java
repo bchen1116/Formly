@@ -26,6 +26,7 @@ import static java.lang.Math.min;
 public class EditViewActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     ArrayList<Dot> dots = new ArrayList<>();
+    ArrayList<Dot> deleted = new ArrayList<>();
     float top = 10;
     float bottom = 1200;
     float left = 10;
@@ -75,6 +76,7 @@ public class EditViewActivity extends AppCompatActivity {
                 clearDots();
 //                offsetDots(dots, true);
                 data.putParcelableArrayListExtra("DOTS", dots);
+                data.putParcelableArrayListExtra("DELETED", deleted);
                 setResult(RESULT_OK, data);
                 finish();
             }
@@ -272,8 +274,12 @@ public class EditViewActivity extends AppCompatActivity {
                         selectedDot = null;
                         // otherwise, it is outside of range, so we delete this dot
                     } else {
+                        deleted.add(selectedDot);
                         dots.remove(selectedDot);
                         selectedDot = null;
+
+//                        db.collection("User1").document("Fragments").
+
                     }
                     isMoving = false;
                     break;

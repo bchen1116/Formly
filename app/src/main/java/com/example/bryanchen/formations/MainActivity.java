@@ -97,44 +97,6 @@ public class MainActivity extends AppCompatActivity {
         myAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(myAdapter);
 
-//        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-//            @Override
-//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-//                Log.e("onPageScrolled" , " "+ position);
-//                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
-//
-//            }
-//
-//            @Override
-//            public void onPageSelected(int position) {
-//                Log.e("onPageSelected" , " "+ position);
-//
-//                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
-//            }
-//
-//            @Override
-//            public void onPageScrollStateChanged(int state) {
-//                Log.e("onPageSSC" , " "+ state);
-//                pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
-//
-//            }
-//        });
-//        mViewPager.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//                switch (motionEvent.getAction()) {
-//
-////                    case ACTION_DOWN:
-////                        pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
-////                    case ACTION_UP:
-////                        pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
-//                    default:
-//                        Log.e("Are we touching" , "yes we are");
-//                        pageNumbers.setText(mViewPager.getCurrentItem()+" of "+ NUM_ITEMS);
-//                }
-//                return true;
-//            }
-//        });
 
         // checks if there exists a bundle. Loads data if there is
         if (b != null) {
@@ -177,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
         mViewPager.addOnPageChangeListener(onPageChangeListener);
         // adds a slide if there are no slides on this formation
-        if (NUM_ITEMS < 1) {
+        if (NUM_ITEMS < 1 || numLoadedFrags < 1) {
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
             addView(s);
             NUM_ITEMS++;
@@ -217,7 +179,9 @@ public class MainActivity extends AppCompatActivity {
                                     Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
                                     f.setDots(dots);
                                 } else {
-                                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+//                                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                                    Slidescreen s = new Slidescreen();
+                                    s.setPage(NUM_ITEMS);
                                     s.setDots(dots);
 
                                     NUM_ITEMS++;
@@ -234,41 +198,16 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-//        CollectionReference collectionRef = db.collection("User1").document("Fragment 0").collection("Dots");
-//        collectionRef.get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            dots = new ArrayList<>();
-//                            for (DocumentSnapshot doc : task.getResult()) {
-//                                Map<String, Object> newDotData = doc.getData();
-//                                Dot newDot = new Dot(newDotData);
-//                                dots.add(newDot);
-//
-////                                Log.e("Dot Object",doc.getId() + " => " + doc.getData());
-//                            }
-//
-//                            Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-//                            f.setDots(dots);
-//                            f.setPage(NUM_ITEMS);
-//                            myAdapter.notifyDataSetChanged();
-//
-//                        }
-//                        else {
-//                            Log.e("Load Fail", "Error getting documents: ", task.getException());
-//                        }
-//                    }
-//                });
-
-
         // button to add more slides to the activity
         FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button1);
         fragButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (dots.size() > 0) {
                     Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
-                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                    Slidescreen currentSlide = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+//                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                    Slidescreen s = new Slidescreen();
+                    s.setPage(currentSlide.page + 1); // TODO: Change this when we allow inserting frames in between
                     s.setDots(dots);
                     NUM_ITEMS++;
                     pageNumbers.setText(NUM_ITEMS+" of "+ NUM_ITEMS);
@@ -297,30 +236,19 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
         if (requestCode == EDIT_DOTS_REQUEST) {
             if (resultCode == RESULT_OK) {
+                List<Dot> deleted = new ArrayList<>();
+
                 dots = data.getParcelableArrayListExtra("DOTS");
+                if (data.getParcelableArrayListExtra("DELETED") != null){
+                    deleted = data.getParcelableArrayListExtra("DELETED");
+                }
+
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                Log.d("Page: ", "" + f.getPage());
+//                Log.d("frame", "id: " + f.getId() + ", page: " + f.page + ", int: " + f.getInt() + ", getpage: " + f.getPage());
                 f.setDots(dots);
                 int fragNumInt = 0;
 
-//                db.collection("User1").document("Fragments").delete();
-//                deleteCollection()
-
-//                db.collection("User1").document("Fragments").collection()
-
-//                db.collection("User1").document("Fragments")
-//                        .delete()
-//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void aVoid) {
-//                                Log.d("BYE", "Document snapshot successfully deleted");
-//                            }
-//                        })
-//                        .addOnFailureListener(new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//                                Log.w("BAD BYE", "Error deleting document", e);
-//                            }
-//                        });
                 for (Fragment fr:  myAdapter.getFragment()) {
 //                    Log.d("fragment", "another fragment at page " + fr.)
                     Slidescreen frag = (Slidescreen) fr;
@@ -337,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Log.d(STORE, "DocumentSnapshot successfully written");
+//                                        Log.d(STORE, "DocumentSnapshot successfully written");
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
@@ -348,6 +276,31 @@ public class MainActivity extends AppCompatActivity {
                                 });
                     }
                     fragNumInt++;
+                }
+                int i = 0;
+                for (Dot d: deleted) {
+//                    Log.d("Deleted Dot: ", d.toString());
+                    if (d != null) {
+                        db.collection("User1").document("Fragments").collection("Fragment " + f.getPage()).document(d.getID().toString())
+                                .delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.d("Delete Success", "deleted " + d.toString());
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.w("Delete Fail", "Error deleting document", e);
+
+                                    }
+                                });
+                    }
+                    else {
+                        Log.d("NULL DOT", String.valueOf(i));
+                    }
+                    i++;
                 }
 
                 Map<String, Integer> numData = new HashMap<>();
@@ -374,60 +327,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Delete all documents in a collection. Uses an Executor to perform work on a background
-     * thread. This does *not* automatically discover and delete subcollections.
-     */
-    private Task<Void> deleteCollection(final CollectionReference collection,
-                                        final int batchSize,
-                                        Executor executor) {
-
-        // Perform the delete operation on the provided Executor, which allows us to use
-        // simpler synchronous logic without blocking the main thread.
-        return Tasks.call(executor, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                // Get the first batch of documents in the collection
-                Query query = collection.orderBy(FieldPath.documentId()).limit(batchSize);
-
-                // Get a list of deleted documents
-                List<DocumentSnapshot> deleted = deleteQueryBatch(query);
-
-                // While the deleted documents in the last batch indicate that there
-                // may still be more documents in the collection, page down to the
-                // next batch and delete again
-                while (deleted.size() >= batchSize) {
-                    // Move the query cursor to start after the last doc in the batch
-                    DocumentSnapshot last = deleted.get(deleted.size() - 1);
-                    query = collection.orderBy(FieldPath.documentId())
-                            .startAfter(last.getId())
-                            .limit(batchSize);
-
-                    deleted = deleteQueryBatch(query);
-                }
-
-                return null;
-            }
-        });
-
-    }
-
-    /**
-     * Delete all results from a query in a single WriteBatch. Must be run on a worker thread
-     * to avoid blocking/crashing the main thread.
-     */
-    @WorkerThread
-    private List<DocumentSnapshot> deleteQueryBatch(final Query query) throws Exception {
-        QuerySnapshot querySnapshot = Tasks.await(query.get());
-
-        WriteBatch batch = query.getFirestore().batch();
-        for (DocumentSnapshot snapshot : querySnapshot) {
-            batch.delete(snapshot.getReference());
-        }
-        Tasks.await(batch.commit());
-
-        return querySnapshot.getDocuments();
-    }
 
     // adds a new slide to the viewPager
     public void addView(Fragment newPage) {
