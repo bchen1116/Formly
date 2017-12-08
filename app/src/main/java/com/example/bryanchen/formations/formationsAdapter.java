@@ -1,7 +1,10 @@
 package com.example.bryanchen.formations;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,7 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,24 +29,23 @@ import java.util.List;
 public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.MyViewHolder> {
     private List<FragList> fragLists = new ArrayList<>();
     private String titles;
-    private ImageButton getQR;
-    private ImageView QR;
+    private ImageView getQR;
     private final String p = " pages";
+    private Context c;
+
 //    private OnItemClicked mListener;
 
     // class for entry
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, pages;
-        public ImageButton getQR;
-        public ImageView QR;
+        public ImageView getQR;
 
         // initializes the entry
         public MyViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.title);
             pages = (TextView) view.findViewById(R.id.pages);
-            getQR = (ImageButton) view.findViewById(R.id.QRbutton);
-            QR = (ImageView) view.findViewById(R.id.QRview);
+            getQR = (ImageView) view.findViewById(R.id.QRbutton);
         }
     }
 
@@ -60,7 +66,7 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     public formationsAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.formations, parent, false);
-
+        c = parent.getContext();
         return new MyViewHolder(itemView);
     }
 
@@ -73,18 +79,31 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
         holder.title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                QR = (ImageView) v.findViewById(R.id.QRview);
                 onClick.onItemClick(position);
             }
         });
         holder.getQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                QR = (ImageView) v.findViewById(R.id.QRview);
-//
-////                QR.setImageResource(R.drawable.logo);
-//                QR.setVisibility(View.VISIBLE);
-//                getQR.setVisibility(View.GONE);
+                Log.e("CLICKED", "YAY");
+                ImageView image = new ImageView(v.getContext());
+                ImageView org = (ImageView) holder.getQR;
+                // Copy drawable of that image
+                image.setImageDrawable(org.getDrawable());
+                // Copy Background of that image
+                image.setBackground(org.getBackground());
+
+                AlertDialog.Builder builder =
+                        new AlertDialog.Builder(v.getContext()).
+                                setMessage("QR code").
+                                setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                }).
+                                setView(image);
+                builder.create().show();
             }
         });
 

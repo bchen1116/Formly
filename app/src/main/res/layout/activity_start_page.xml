@@ -30,7 +30,7 @@
         android:scrollbars="vertical"
         android:fadeScrollbars="true"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/silver"/>
 
     <TextView
         android:id="@+id/empty_view"

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -167,12 +168,9 @@ public class EditViewActivity extends AppCompatActivity {
             // drawing dots
             for (Dot p : dots) {
                 paint.setColor(p.getColor());
-//                int size = p.getName().length();
-//                if (size > 0) {
-//                    textPaint.setTextSize(26 - 3 * size / 4);
-//                } else {
                 textPaint.setTextSize(30);
-//                }
+                textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
                 if (p.isSelected()) {
                     editPeople.setVisibility(VISIBLE);
                     selectedDot = p;
@@ -280,6 +278,7 @@ public class EditViewActivity extends AppCompatActivity {
 
 //                        db.collection("User1").document("Fragments").
 
+                        editPeople.setVisibility(GONE);
                     }
                     isMoving = false;
                     break;

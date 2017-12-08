@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
@@ -141,7 +142,6 @@ public class Slidescreen extends Fragment{
 
     // gets the comments associated with the slidescreen
     public String getComments() {
-        Log.e("THESE COMMENTS", this.comments);
         return this.comments;
     }
 
@@ -214,7 +214,7 @@ public class Slidescreen extends Fragment{
             paint.setStyle(Paint.Style.FILL);
             textPaint.setColor(Color.BLACK);
             textPaint.setTextAlign(Paint.Align.CENTER);
-
+            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             if (dots != null) {
                 for (Dot p : dots) {
                     paint.setColor(p.getColor());
@@ -226,7 +226,7 @@ public class Slidescreen extends Fragment{
                     if (p.getName().length() > 0) {
                         String[] temp = p.getName().split(" ");
                         if (temp.length > 1) {
-                            tempName = temp[0].substring(0, 1) + temp[1].substring(0, 1);
+                            tempName = temp[0].substring(0, 1).toUpperCase() + temp[1].substring(0, 1).toUpperCase();
                         } else {
                             tempName = temp[0].substring(0, min(2, temp[0].length()));
                         }

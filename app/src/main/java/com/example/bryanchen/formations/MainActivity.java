@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
             className = b.getString("name");
             List<DotList> dlists = b.getParcelableArrayList("dotlists");
             for (int i = 0; i < dlists.size(); i++) {
-                Log.e("PAGES SUP", " " + i);
                 Slidescreen s = new Slidescreen().newInstance(String.valueOf(i), i);
                 s.setPage(i);
                 s.setDots(dlists.get(i).getDots());
@@ -146,11 +145,9 @@ public class MainActivity extends AppCompatActivity {
             onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
             myAdapter.notifyDataSetChanged();
         }
-        mViewPager.post(new Runnable()
-        {
+        mViewPager.post(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
             }
         });
@@ -330,9 +327,9 @@ public class MainActivity extends AppCompatActivity {
 
     // adds a new slide to the viewPager
     public void addView(Fragment newPage) {
-        int pageIndex = myAdapter.addView(newPage);
+        int index = myAdapter.addView(newPage);
         // You might want to make "newPage" the currently displayed page:
-        mViewPager.setCurrentItem(pageIndex, true);
+        mViewPager.setCurrentItem(index, true);
     }
 
     // auto-generated method
@@ -395,7 +392,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public boolean onTouch(View v, MotionEvent e) {
-            Log.e("did we touch",e.toString());
             return true;
         }
 
