@@ -52,7 +52,6 @@ public class StartPage extends AppCompatActivity {
     private TextView emptyView;
     String name = "";
     private final int CAMERACODE = 5;
-    private ImageView QRshow;
 
     // creates the StartPage
     @Override
@@ -117,7 +116,6 @@ public class StartPage extends AppCompatActivity {
         mAdapter = new formationsAdapter(new formationsAdapter.OnItemClicked() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(getApplicationContext(), "Position " + position + " clicked", Toast.LENGTH_SHORT).show();
                 Bundle b = new Bundle();
                 FragList current = mains.get(position);
                 b.putString("name", current.getActivityName());
@@ -221,8 +219,4 @@ public class StartPage extends AppCompatActivity {
         return true;
     }
 
-//    public void setQR() {
-//        QRshow.setImageDrawable(getResources().getDrawable(R.drawable.ic_logo));
-//        QRshow.setVisibility(View.VISIBLE);
-//    }
 }

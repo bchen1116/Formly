@@ -248,8 +248,10 @@ public class Slidescreen extends Fragment{
         return x > 10 && x < 1000 && y < 1200 && y > 10;
     }
 
-    // checks if comments have been written
-    public void onBackPressed() {
-        updateComments();
+    // check equality
+    public boolean isEqual(Object o) {
+        Slidescreen s = (Slidescreen) o;
+        return (this.dots.equals(s.getDots()) && this.comments.equals(s.getComments()) &&
+                this.page == s.getPage());
     }
 }

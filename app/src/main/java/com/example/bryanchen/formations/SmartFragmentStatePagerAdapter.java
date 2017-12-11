@@ -6,6 +6,9 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by BryanChen on 10/16/17.
  */
@@ -18,6 +21,8 @@ import android.view.ViewGroup;
 public abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
     // Sparse array to keep track of registered fragments in memory
     private SparseArray<Fragment> registeredFragments = new SparseArray<Fragment>();
+//    private Map<Integer, String> fragTags = new HashMap<>();
+//    private Map<String, Fragment> taggedFrags = new HashMap<>();
 
     public SmartFragmentStatePagerAdapter(FragmentManager fragmentManager) {
         super(fragmentManager);
@@ -27,9 +32,21 @@ public abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerA
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         Fragment fragment = (Fragment) super.instantiateItem(container, position);
+        String tag = fragment.getTag();
+//        fragTags.put(position, tag);
+//        taggedFrags.put(tag, fragment);
         registeredFragments.put(position, fragment);
         return fragment;
     }
+
+//    // get the fragment associated with the tag
+//    public Fragment getFragment(int position) {
+//        String tag = fragTags.get(position);
+//        if (tag == null) {
+//            return null;
+//        }
+//        return taggedFrags.get(tag);
+//    }
 
     // Unregister when the item is inactive
     @Override
