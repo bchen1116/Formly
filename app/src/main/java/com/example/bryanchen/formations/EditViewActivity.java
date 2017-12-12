@@ -6,9 +6,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.graphics.Canvas;
 import android.view.View;
@@ -72,19 +75,33 @@ public class EditViewActivity extends AppCompatActivity {
         Button doneButton = (Button) findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
-                Intent data = new Intent();
-                clearDots();
-//                offsetDots(dots, true);
-                data.putParcelableArrayListExtra("DOTS", dots);
-                data.putParcelableArrayListExtra("DELETED", deleted);
-                setResult(RESULT_OK, data);
-                finish();
+                endSession();
             }
         });
 
     }
 
+    // takes care of back button
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) // Press Back Icon
+        {
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void endSession() {
+        Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
+        Intent data = new Intent();
+        clearDots();
+//                offsetDots(dots, true);
+        data.putParcelableArrayListExtra("DOTS", dots);
+        data.putParcelableArrayListExtra("DELETED", deleted);
+        setResult(RESULT_OK, data);
+        finish();
+    }
     // unselects all dots
     public void clearDots() {
         for (Dot i : dots) {

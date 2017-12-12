@@ -1,8 +1,11 @@
 package com.example.bryanchen.formations;
 
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Bundle;
@@ -15,6 +18,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private Bundle b = null;
     public TextView pageNumbers;
     private ViewPager.OnPageChangeListener onPageChangeListener;
-    private FloatingActionButton deletePage;
+    private FloatingActionButton deletePage, comments;
 
     // Initializes the mainActivity
     @Override
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         // find the pageNumber textView
         pageNumbers = (TextView) findViewById(R.id.pageNumber);
         deletePage = (FloatingActionButton) findViewById(R.id.removeButton);
+        comments = (FloatingActionButton) findViewById(R.id.comments);
         // find if there is a bundle passed through to load
         try {
             b = getIntent().getExtras().getBundle("fragList");
@@ -79,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(className);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endSession();
+            }
+        });
 
         Intent intent = getIntent();
         numLoadedFrags = intent.getExtras().getInt("numFrags");
@@ -133,12 +146,12 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(onPageChangeListener);
         // adds a slide if there are no slides on this formation
         if (NUM_ITEMS < 1 || numLoadedFrags < 1 && NUM_ITEMS<1) {
-            Log.e("NUM ITEMS", " "+ NUM_ITEMS);
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
             addView(s, 0);
             NUM_ITEMS++;
             onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
             myAdapter.notifyDataSetChanged();
+            deletePage.setVisibility(View.VISIBLE);
         }
         mViewPager.post(new Runnable() {
             @Override
@@ -196,13 +209,14 @@ public class MainActivity extends AppCompatActivity {
                     int index = mViewPager.getCurrentItem();
                     Slidescreen currentSlide = (Slidescreen) myAdapter.getCurrentFrag(index);
                     Slidescreen s = new Slidescreen();
-                    s.setPage(index + 1); // TODO: Change this when we allow inserting frames in between
+                    s.setPage(index +1);
                     s.setDots(dots);
                     NUM_ITEMS++;
                     pageNumbers.setText(NUM_ITEMS+" of "+ NUM_ITEMS);
-                    addView(s, index);
+                    addView(s, index+1);
                     onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
                     myAdapter.notifyDataSetChanged();
+                    deletePage.setVisibility(View.VISIBLE);
                 } else {
                     Toast.makeText(getApplicationContext(), "Add people first!", Toast.LENGTH_SHORT).show();
                 }
@@ -249,17 +263,68 @@ public class MainActivity extends AppCompatActivity {
                 deletePage.setVisibility(View.VISIBLE);
             }
         });
+
+        // handles comments
+        comments.setOnClickListener(new View.OnClickListener()  {
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                TextView tvMessage = new TextView(MainActivity.this);
+                final EditText etInput = new EditText(MainActivity.this);
+                int page = mViewPager.getCurrentItem();
+                Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(page);
+                String commentary = s.getComments();
+                etInput.setText(commentary);
+
+                tvMessage.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                tvMessage.setText("Comments: ");
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(tvMessage);
+                layout.addView(etInput);
+                layout.setPadding(50, 40, 50, 10);
+
+                builder.setView(layout);
+
+                // cancel
+                builder.setNegativeButton("Cancel", (dialog, which) -> {
+                    dialog.cancel();
+                });
+
+                // if ok is pressed, creates a new formation
+                builder.setPositiveButton("Done", (dialog, which) -> {
+                    String com = etInput.getText().toString();
+                    s.setComments(com);
+                    s.updateComments();
+                });
+                builder.create().show();
+            }
+        });
     }
+
+//    private void setupToolbar(){
+//        Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//        ActionBar actionBar=getSupportActionBar();
+//        actionBar.setDisplayHomeAsUpEnabled(true);
+//        actionBar.setDisplayShowHomeEnabled(true);
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.e("we here", "yas");
+//                endSession();
+//            }
+//        });
+//    }
 
     @Override
     public void onResume() {
         super.onResume();
+        deletePage.setVisibility(View.VISIBLE);
         int fragNumInt = 0;
         for (Fragment fr : myAdapter.getFragment()) {
             Slidescreen frag = (Slidescreen) fr;
             frag.updateDots(dots);
 
-            Log.v("FRAG_NUM", String.valueOf(fragNumInt));
             int dotNumInt = 0;
             for (Dot d : frag.getDots()) {
                 // Writing to fireStore
@@ -381,9 +446,13 @@ public class MainActivity extends AppCompatActivity {
 
     // adds a new slide to the viewPager
     public void addView(Fragment newPage, int index) {
-        myAdapter.addView(newPage, index);
+        if (index < NUM_ITEMS) {
+            myAdapter.addView(newPage, index);
+        } else {
+            myAdapter.addView(newPage);
+        }
         // You might want to make "newPage" the currently displayed page:
-        mViewPager.setCurrentItem(index+1, true);
+        mViewPager.setCurrentItem(index, false);
         myAdapter.notifyDataSetChanged();
     }
 

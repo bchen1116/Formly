@@ -51,7 +51,7 @@ public class Slidescreen extends Fragment{
                 R.layout.fragment_slidescreen, container, false);
 
         s = new drawView(getActivity());
-        inputEdit = new EditText(getActivity());
+//        inputEdit = new EditText(getActivity());
 
         // the purpose of the touch listener is just to store the touch X,Y coordinates
         s.setOnTouchListener(new View.OnTouchListener() {
@@ -64,7 +64,7 @@ public class Slidescreen extends Fragment{
                     lastTouchDownXY[1] = event.getY();
                 }
                 // let the touch event pass on to whoever needs it
-                comments = inputEdit.getText().toString();
+//                comments = inputEdit.getText().toString();
                 return false;
             }
         });
@@ -98,17 +98,17 @@ public class Slidescreen extends Fragment{
         });
 
         ViewGroup linear = (ViewGroup) rootView.findViewById(R.id.linear);
-        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEdit.setLayoutParams(lparams);
-        inputEdit.setHint("Comments:");
+//        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        inputEdit.setLayoutParams(lparams);
+//        inputEdit.setHint("Comments:");
 
         linear.addView(s);
-        linear.addView(inputEdit);
-        if (comments.equals("")) {
-            comments = inputEdit.getText().toString();
-        } else {
-            inputEdit.setText(this.comments);
-        }
+//        linear.addView(inputEdit);
+//        if (comments.equals("")) {
+//            comments = inputEdit.getText().toString();
+//        } else {
+//            inputEdit.setText(this.comments);
+//        }
         return rootView;
     }
 
