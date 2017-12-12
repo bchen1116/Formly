@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,10 +17,18 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.WHITE;
 
 /**
  * Created by BryanChen on 12/4/17.
@@ -32,6 +41,7 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     private ImageView getQR;
     private final String p = " pages";
     private Context c;
+    private int WIDTH = 500;
 
 //    private OnItemClicked mListener;
 
@@ -46,7 +56,36 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
             title = (TextView) view.findViewById(R.id.title);
             pages = (TextView) view.findViewById(R.id.pages);
             getQR = (ImageView) view.findViewById(R.id.QRbutton);
+            try {
+                Bitmap bitmap = encodeAsBitmap("HI THERE");
+                getQR.setImageBitmap(bitmap);
+            } catch (WriterException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    Bitmap encodeAsBitmap(String str) throws WriterException {
+        BitMatrix result;
+        try {
+            result = new MultiFormatWriter().encode(str,
+                    BarcodeFormat.QR_CODE, WIDTH, WIDTH, null);
+        } catch (IllegalArgumentException iae) {
+            // Unsupported format
+            return null;
+        }
+        int w = result.getWidth();
+        int h = result.getHeight();
+        int[] pixels = new int[w * h];
+        for (int y = 0; y < h; y++) {
+            int offset = y * w;
+            for (int x = 0; x < w; x++) {
+                pixels[offset + x] = result.get(x, y) ? BLACK : WHITE;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        bitmap.setPixels(pixels, 0, WIDTH, 0, 0, w, h);
+        return bitmap;
     }
 
     // checking for item clicking

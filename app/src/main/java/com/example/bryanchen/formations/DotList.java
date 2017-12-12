@@ -30,6 +30,7 @@ public class DotList implements Parcelable {
             this.dotList = dots;
             this.pageNumber = num;
             this.comment = edit;
+            Log.e("order dotlist", ""+pageNumber);
         }
 
         // creates a DotList obj from a parcel

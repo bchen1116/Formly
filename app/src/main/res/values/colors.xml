@@ -7,6 +7,7 @@
     <color name="purple_navy">#404e7c</color>
     <color name="silver">#C0C0C0</color>
     <string-array name="colors">
+        <item name="Grey">#878787</item>
         <item name="Silver">#C0C0C0</item>
         <item name="Maroon">#800000</item>
         <item name="Red">#FF0000</item>

@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
         // checks if there exists a bundle. Loads data if there is
         if (b != null) {
+            Log.e("we has stuff", "load it");
             className = b.getString("name");
             List<DotList> dlists = b.getParcelableArrayList("dotlists");
             for (int i = 0; i < dlists.size(); i++) {
@@ -261,6 +262,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 myAdapter.notifyDataSetChanged();
                 deletePage.setVisibility(View.VISIBLE);
+                for (Fragment f: myAdapter.getFragment()) {
+                    Slidescreen s = (Slidescreen) f;
+                    int newPage = s.getPage();
+                    if (newPage>page) {
+                        s.setPage(newPage-1);
+                    }
+                }
             }
         });
 
@@ -447,7 +455,15 @@ public class MainActivity extends AppCompatActivity {
     // adds a new slide to the viewPager
     public void addView(Fragment newPage, int index) {
         if (index < NUM_ITEMS) {
+            for (Fragment f: myAdapter.getFragment()) {
+            Slidescreen s = (Slidescreen) f;
+            int page = s.getPage();
+            if (page >= index) {
+                s.setPage(page+1);
+            }
+        }
             myAdapter.addView(newPage, index);
+
         } else {
             myAdapter.addView(newPage);
         }

@@ -1,4 +1,6 @@
 package com.example.bryanchen.formations;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 
 import java.io.Serializable;
@@ -15,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 
 /**
  * Created by BryanChen on 9/20/17.
