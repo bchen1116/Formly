@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 
+import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,6 +35,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,11 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
     List<Dot> dots = new ArrayList<>();
     static final int EDIT_DOTS_REQUEST = 12;
-    private static final int REQUEST_PERMISSION = 1;
     static final String STORE = "store";
     static final String STORE_FAIL = "fail";
-    static final String LOAD = "load";
-    static final String DOC_GET = "DOC GET";
 
     public int numLoadedFrags = 0;
     public String className = "";
@@ -442,8 +441,12 @@ public class MainActivity extends AppCompatActivity {
     // ends the MainActivity session
     public void endSession() {
         FragList result = new FragList(this.className, this.myAdapter.getFragment());
+        Log.d("FRAGLIST", this.className + " " + this.myAdapter.getFragment().toString() + ", " + result.getDots());
         Intent finishing = new Intent();
         finishing.putExtra("FINAL", result);
+        finishing.putExtra("Formation Name", this.className);
+        finishing.putExtra("Num Frags", this.myAdapter.getCount());
+        finishing.putParcelableArrayListExtra("Dots", result.getDots());
         setResult(RESULT_OK, finishing);
         finish();
     }

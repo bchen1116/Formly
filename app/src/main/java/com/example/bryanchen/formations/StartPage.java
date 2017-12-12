@@ -1,5 +1,6 @@
 package com.example.bryanchen.formations;
 
+import android.support.v4.app.Fragment;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Slide;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,17 +24,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ResultCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -42,6 +54,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 // page that contains all of the different formations
 public class StartPage extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+
 
     public int numLoadedFrags = 0;
     private int GET_MAIN_REQUEST = 15;
@@ -58,7 +72,6 @@ public class StartPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
-
         QRshow = findViewById(R.id.QRview);
 
         db.collection("User1").document("Num Frags")
@@ -197,17 +210,57 @@ public class StartPage extends AppCompatActivity {
         emptyView.setVisibility(View.GONE);
         if (requestCode == GET_MAIN_REQUEST && resultCode == RESULT_OK) {
             FragList f = data.getExtras().getParcelable("FINAL");
+
+
+            String formationName = data.getExtras().getString("Formation Name");
+            int numSlides = data.getExtras().getInt("Num Frags");
+            Map<String, Integer> numSlidesMap = new HashMap<>();
+            numSlidesMap.put("num", numSlides);
+
+            db.collection("Users").document(auth.getUid())
+                    .collection(formationName + " " + auth.getUid())
+                    .document("Num Frags")
+                    .set(numSlidesMap)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d("num frags", "" + numSlidesMap.get("num"));
+                        }
+                    });
+
             for (int i = 0; i < mains.size(); i++) {
                 if (mains.get(i).getActivityName().equals(f.getActivityName())) {
                     mains.remove(i);
                 }
             }
+
+            List<DotList> allDots = data.getParcelableArrayListExtra("Dots");
+            for (int i = 0; i < numSlides; i++) {
+                DotList slideDots = allDots.get(i);
+                for (int dot = 0; dot < slideDots.getDots().size(); dot++) {
+                    Dot currentDot = slideDots.getDots().get(dot);
+                    db.collection("Users").document(auth.getUid()).collection(formationName + " " + auth.getUid())
+                            .document("Fragments").collection("Fragment " + i)
+                            .document("" + currentDot.getID())
+                            .set(currentDot)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+
+                                }
+                            });
+
+                }
+
+
+            }
+
+
             mains.add(0, f);
             mAdapter.notifyDataSetChanged();
         } else if (requestCode == CAMERACODE && resultCode == RESULT_OK) {
             Log.e("WE COOL", data.getExtras().getString("work"));
         }
-
 
     }
 
@@ -219,6 +272,12 @@ public class StartPage extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        FirebaseAuth.getInstance().signOut();
     }
 
 //    public void setQR() {
