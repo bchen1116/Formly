@@ -1,9 +1,11 @@
 package com.example.bryanchen.formations;
 
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
-import android.support.annotation.WorkerThread;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Bundle;
@@ -16,6 +18,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
@@ -25,25 +29,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-
-import static android.view.MotionEvent.ACTION_DOWN;
-import static android.view.MotionEvent.ACTION_UP;
 
 // represents a single set of formations
 public class MainActivity extends AppCompatActivity {
@@ -65,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private Bundle b = null;
     public TextView pageNumbers;
     private ViewPager.OnPageChangeListener onPageChangeListener;
+    private FloatingActionButton deletePage, comments;
 
     // Initializes the mainActivity
     @Override
@@ -74,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         // find the pageNumber textView
         pageNumbers = (TextView) findViewById(R.id.pageNumber);
-
+        deletePage = (FloatingActionButton) findViewById(R.id.removeButton);
+        comments = (FloatingActionButton) findViewById(R.id.comments);
         // find if there is a bundle passed through to load
         try {
             b = getIntent().getExtras().getBundle("fragList");
@@ -87,6 +83,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(className);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endSession();
+            }
+        });
 
         Intent intent = getIntent();
         numLoadedFrags = intent.getExtras().getInt("numFrags");
@@ -99,16 +102,15 @@ public class MainActivity extends AppCompatActivity {
 
         // checks if there exists a bundle. Loads data if there is
         if (b != null) {
-            savedInstanceState = b;
+            Log.e("we has stuff", "load it");
             className = b.getString("name");
             List<DotList> dlists = b.getParcelableArrayList("dotlists");
             for (int i = 0; i < dlists.size(); i++) {
-                Log.e("PAGES SUP", " " + i);
                 Slidescreen s = new Slidescreen().newInstance(String.valueOf(i), i);
                 s.setPage(i);
                 s.setDots(dlists.get(i).getDots());
                 s.setComments(dlists.get(i).getComment());
-                addView(s);
+                addView(s, i);
                 NUM_ITEMS++;
             }
             myAdapter.notifyDataSetChanged();
@@ -120,36 +122,39 @@ public class MainActivity extends AppCompatActivity {
         onPageChangeListener = new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                deletePage.setVisibility(View.GONE);
                 pageNumbers.setText(mViewPager.getCurrentItem()+1+" of "+ NUM_ITEMS);
 
             }
 
             @Override
             public void onPageSelected(int position) {
+                deletePage.setVisibility(View.VISIBLE);
                 pageNumbers.setText(mViewPager.getCurrentItem()+1+" of "+ NUM_ITEMS);
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
                 pageNumbers.setText(mViewPager.getCurrentItem()+1+" of "+ NUM_ITEMS);
-
+                Slidescreen d =(Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
+                dots = d.getDots();
+                deletePage.setVisibility(View.VISIBLE);
             }
         };
 
         mViewPager.addOnPageChangeListener(onPageChangeListener);
         // adds a slide if there are no slides on this formation
-        if (NUM_ITEMS < 1 || numLoadedFrags < 1) {
+        if (NUM_ITEMS < 1 || numLoadedFrags < 1 && NUM_ITEMS<1) {
             Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
-            addView(s);
+            addView(s, 0);
             NUM_ITEMS++;
             onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
             myAdapter.notifyDataSetChanged();
+            deletePage.setVisibility(View.VISIBLE);
         }
-        mViewPager.post(new Runnable()
-        {
+        mViewPager.post(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
             }
         });
@@ -178,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
                                     Slidescreen f = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
                                     f.setDots(dots);
                                 } else {
-//                                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
                                     Slidescreen s = new Slidescreen();
                                     s.setPage(NUM_ITEMS);
                                     s.setDots(dots);
@@ -195,25 +199,23 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
 
-
-
         // button to add more slides to the activity
         FloatingActionButton fragButton = (FloatingActionButton) findViewById(R.id.button1);
         fragButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (dots.size() > 0) {
                     Toast.makeText(getApplicationContext(), "Adding a new page", Toast.LENGTH_SHORT).show();
-                    Slidescreen currentSlide = (Slidescreen) myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-//                    Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                    int index = mViewPager.getCurrentItem();
+                    Slidescreen currentSlide = (Slidescreen) myAdapter.getCurrentFrag(index);
                     Slidescreen s = new Slidescreen();
-                    s.setPage(currentSlide.page + 1); // TODO: Change this when we allow inserting frames in between
+                    s.setPage(index +1);
                     s.setDots(dots);
                     NUM_ITEMS++;
                     pageNumbers.setText(NUM_ITEMS+" of "+ NUM_ITEMS);
-                    addView(s);
+                    addView(s, index+1);
                     onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
-
                     myAdapter.notifyDataSetChanged();
+                    deletePage.setVisibility(View.VISIBLE);
                 } else {
                     Toast.makeText(getApplicationContext(), "Add people first!", Toast.LENGTH_SHORT).show();
                 }
@@ -224,12 +226,133 @@ public class MainActivity extends AppCompatActivity {
         Button doneButton = (Button) findViewById(R.id.button);
         doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
                 Toast.makeText(getApplicationContext(), "Exiting", Toast.LENGTH_SHORT).show();
                 endSession();
             }
         });
 
+        // handles page deletes
+        deletePage.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Deleting page", Toast.LENGTH_SHORT);
+                NUM_ITEMS--;
+                int page =  mViewPager.getCurrentItem();
+                myAdapter.destroyItem(mViewPager, page, myAdapter.getCurrentFrag(page));
+                myAdapter.notifyDataSetChanged();
+                myAdapter.deleteFrag(page);
+                if (page > 0) {
+                    mViewPager.setCurrentItem(page-1);
+                    Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(page-1);
+                    dots = s.getDots();
+                } else {
+                    try {
+                        mViewPager.setCurrentItem(page);
+                        Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(page);
+                        dots = s.getDots();
+                    } catch (Exception e) {
+                        dots.clear();
+                        Slidescreen s = new Slidescreen().newInstance(String.valueOf(NUM_ITEMS), NUM_ITEMS);
+                        addView(s, 0);
+                        NUM_ITEMS++;
+                        onPageChangeListener.onPageSelected(mViewPager.getCurrentItem());
+                        myAdapter.notifyDataSetChanged();
+                    }
+                }
+                myAdapter.notifyDataSetChanged();
+                deletePage.setVisibility(View.VISIBLE);
+                for (Fragment f: myAdapter.getFragment()) {
+                    Slidescreen s = (Slidescreen) f;
+                    int newPage = s.getPage();
+                    if (newPage>page) {
+                        s.setPage(newPage-1);
+                    }
+                }
+            }
+        });
+
+        // handles comments
+        comments.setOnClickListener(new View.OnClickListener()  {
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                TextView tvMessage = new TextView(MainActivity.this);
+                final EditText etInput = new EditText(MainActivity.this);
+                int page = mViewPager.getCurrentItem();
+                Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(page);
+                String commentary = s.getComments();
+                etInput.setText(commentary);
+
+                tvMessage.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                tvMessage.setText("Comments: ");
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(tvMessage);
+                layout.addView(etInput);
+                layout.setPadding(50, 40, 50, 10);
+
+                builder.setView(layout);
+
+                // cancel
+                builder.setNegativeButton("Cancel", (dialog, which) -> {
+                    dialog.cancel();
+                });
+
+                // if ok is pressed, creates a new formation
+                builder.setPositiveButton("Done", (dialog, which) -> {
+                    String com = etInput.getText().toString();
+                    s.setComments(com);
+                    s.updateComments();
+                });
+                builder.create().show();
+            }
+        });
+    }
+
+//    private void setupToolbar(){
+//        Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//        ActionBar actionBar=getSupportActionBar();
+//        actionBar.setDisplayHomeAsUpEnabled(true);
+//        actionBar.setDisplayShowHomeEnabled(true);
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.e("we here", "yas");
+//                endSession();
+//            }
+//        });
+//    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        deletePage.setVisibility(View.VISIBLE);
+        int fragNumInt = 0;
+        for (Fragment fr : myAdapter.getFragment()) {
+            Slidescreen frag = (Slidescreen) fr;
+            frag.updateDots(dots);
+
+            int dotNumInt = 0;
+            for (Dot d : frag.getDots()) {
+                // Writing to fireStore
+                // Root Collection will later be named to a logged-in user ID or some other identifier
+                String fragNum = String.valueOf(fragNumInt);
+                db.collection("User1").document("Fragments").collection("Fragment " + fragNum).document(d.getID().toString())
+                        .set(d)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+//                                        Log.d(STORE, "DocumentSnapshot successfully written");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e(STORE_FAIL, "Error writing document", e);
+                            }
+                        });
+            }
+            fragNumInt++;
+        }
     }
 
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
@@ -243,13 +366,13 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-                Log.d("Page: ", "" + f.getPage());
+//                Log.e("Page: ", "" + f.getPage());
 //                Log.d("frame", "id: " + f.getId() + ", page: " + f.page + ", int: " + f.getInt() + ", getpage: " + f.getPage());
                 f.setDots(dots);
                 int fragNumInt = 0;
 
                 for (Fragment fr:  myAdapter.getFragment()) {
-//                    Log.d("fragment", "another fragment at page " + fr.)
+                    Log.d("fragment", "another fragment at page " );
                     Slidescreen frag = (Slidescreen) fr;
                     frag.updateDots(dots);
 
@@ -328,10 +451,23 @@ public class MainActivity extends AppCompatActivity {
 
 
     // adds a new slide to the viewPager
-    public void addView(Fragment newPage) {
-        int pageIndex = myAdapter.addView(newPage);
+    public void addView(Fragment newPage, int index) {
+        if (index < NUM_ITEMS) {
+            for (Fragment f: myAdapter.getFragment()) {
+            Slidescreen s = (Slidescreen) f;
+            int page = s.getPage();
+            if (page >= index) {
+                s.setPage(page+1);
+            }
+        }
+            myAdapter.addView(newPage, index);
+
+        } else {
+            myAdapter.addView(newPage);
+        }
         // You might want to make "newPage" the currently displayed page:
-        mViewPager.setCurrentItem(pageIndex, true);
+        mViewPager.setCurrentItem(index, false);
+        myAdapter.notifyDataSetChanged();
     }
 
     // auto-generated method
@@ -370,7 +506,6 @@ public class MainActivity extends AppCompatActivity {
             Slidescreen newI = (Slidescreen) i;
             allDots.add(newI.getDots());
         }
-//        outState.putParcelableArrayList("DOTDOT", allDots);
         super.onSaveInstanceState(outState);
     }
 
@@ -379,7 +514,6 @@ public class MainActivity extends AppCompatActivity {
 
         public TabsPagerAdapter(FragmentManager fm) {
             super(fm);
-//            setContentView(R.layout.activity_slide_screen);
         }
 
 
@@ -394,7 +528,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public boolean onTouch(View v, MotionEvent e) {
-            Log.e("did we touch",e.toString());
             return true;
         }
 
@@ -407,12 +540,13 @@ public class MainActivity extends AppCompatActivity {
         // gets the position for the object
         @Override
         public int getItemPosition(Object obj) {
-            Slidescreen o = (Slidescreen) obj;
-            for (int i = 0; i < getCount(); i++) {
-                if (mlist.get(i).equals(o)) {
-                    return i;
-                }
-            }
+//            Slidescreen o = (Slidescreen) obj;
+//            for (int i = 0; i < getCount(); i++) {
+//                Slidescreen s = (Slidescreen) mlist.get(i);
+//                if s.isEqual(o)) {
+//                    return i;
+//                }
+//            }
             return POSITION_NONE;
         }
 
@@ -424,6 +558,10 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
+        // deletes the page
+        public void deleteFrag(int position) {
+            mlist.remove(position);
+        }
         // Returns the fragment to display for that page
         @Override
         public Fragment getItem(int position) {

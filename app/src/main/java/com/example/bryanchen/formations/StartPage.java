@@ -2,6 +2,7 @@ package com.example.bryanchen.formations;
 
 import android.support.v4.app.Fragment;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -65,14 +66,12 @@ public class StartPage extends AppCompatActivity {
     private TextView emptyView;
     String name = "";
     private final int CAMERACODE = 5;
-    private ImageView QRshow;
 
     // creates the StartPage
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
-        QRshow = findViewById(R.id.QRview);
 
         db.collection("User1").document("Num Frags")
             .get()
@@ -131,7 +130,6 @@ public class StartPage extends AppCompatActivity {
         mAdapter = new formationsAdapter(new formationsAdapter.OnItemClicked() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(getApplicationContext(), "Position " + position + " clicked", Toast.LENGTH_SHORT).show();
                 Bundle b = new Bundle();
                 FragList current = mains.get(position);
                 b.putString("name", current.getActivityName());
@@ -170,6 +168,7 @@ public class StartPage extends AppCompatActivity {
         TextView tvMessage = new TextView(this);
         final EditText etInput = new EditText(this);
 
+        tvMessage.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         tvMessage.setText("Formation name: ");
         etInput.setSingleLine();
         layout.setOrientation(LinearLayout.VERTICAL);

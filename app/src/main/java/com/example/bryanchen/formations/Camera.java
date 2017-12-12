@@ -31,10 +31,9 @@ public class Camera extends AppCompatActivity {
         setContentView(R.layout.activity_camera);
 
         cameraView = (SurfaceView) findViewById(R.id.cameraView);
-        barcodeInfo = (TextView) findViewById(R.id.infoTextView);
 
         BarcodeDetector detector = new BarcodeDetector.Builder(this).setBarcodeFormats(Barcode.QR_CODE).build();
-        cameraSource = new CameraSource.Builder(this, detector).setRequestedPreviewSize(700, 540).build();
+        cameraSource = new CameraSource.Builder(this, detector).setRequestedPreviewSize(800, 900).build();
 
         Button exitButton = (Button) findViewById(R.id.exit);
         exitButton.setOnClickListener(new View.OnClickListener() {

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
@@ -50,7 +51,7 @@ public class Slidescreen extends Fragment{
                 R.layout.fragment_slidescreen, container, false);
 
         s = new drawView(getActivity());
-        inputEdit = new EditText(getActivity());
+//        inputEdit = new EditText(getActivity());
 
         // the purpose of the touch listener is just to store the touch X,Y coordinates
         s.setOnTouchListener(new View.OnTouchListener() {
@@ -63,7 +64,7 @@ public class Slidescreen extends Fragment{
                     lastTouchDownXY[1] = event.getY();
                 }
                 // let the touch event pass on to whoever needs it
-                comments = inputEdit.getText().toString();
+//                comments = inputEdit.getText().toString();
                 return false;
             }
         });
@@ -97,17 +98,17 @@ public class Slidescreen extends Fragment{
         });
 
         ViewGroup linear = (ViewGroup) rootView.findViewById(R.id.linear);
-        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEdit.setLayoutParams(lparams);
-        inputEdit.setHint("Comments:");
+//        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        inputEdit.setLayoutParams(lparams);
+//        inputEdit.setHint("Comments:");
 
         linear.addView(s);
-        linear.addView(inputEdit);
-        if (comments.equals("")) {
-            comments = inputEdit.getText().toString();
-        } else {
-            inputEdit.setText(this.comments);
-        }
+//        linear.addView(inputEdit);
+//        if (comments.equals("")) {
+//            comments = inputEdit.getText().toString();
+//        } else {
+//            inputEdit.setText(this.comments);
+//        }
         return rootView;
     }
 
@@ -141,7 +142,6 @@ public class Slidescreen extends Fragment{
 
     // gets the comments associated with the slidescreen
     public String getComments() {
-        Log.e("THESE COMMENTS", this.comments);
         return this.comments;
     }
 
@@ -214,7 +214,7 @@ public class Slidescreen extends Fragment{
             paint.setStyle(Paint.Style.FILL);
             textPaint.setColor(Color.BLACK);
             textPaint.setTextAlign(Paint.Align.CENTER);
-
+            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             if (dots != null) {
                 for (Dot p : dots) {
                     paint.setColor(p.getColor());
@@ -226,7 +226,7 @@ public class Slidescreen extends Fragment{
                     if (p.getName().length() > 0) {
                         String[] temp = p.getName().split(" ");
                         if (temp.length > 1) {
-                            tempName = temp[0].substring(0, 1) + temp[1].substring(0, 1);
+                            tempName = temp[0].substring(0, 1).toUpperCase() + temp[1].substring(0, 1).toUpperCase();
                         } else {
                             tempName = temp[0].substring(0, min(2, temp[0].length()));
                         }
@@ -248,8 +248,10 @@ public class Slidescreen extends Fragment{
         return x > 10 && x < 1000 && y < 1200 && y > 10;
     }
 
-    // checks if comments have been written
-    public void onBackPressed() {
-        updateComments();
+    // check equality
+    public boolean isEqual(Object o) {
+        Slidescreen s = (Slidescreen) o;
+        return (this.dots.equals(s.getDots()) && this.comments.equals(s.getComments()) &&
+                this.page == s.getPage());
     }
 }

@@ -30,7 +30,9 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="-104dp"
+        android:padding="10dp"
         android:text="Edit Dancer"
+        android:background="@drawable/round"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
@@ -42,7 +44,9 @@
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="2dp"
         android:layout_marginStart="2dp"
+        android:padding="10dp"
         android:text="Finished Editing"
+        android:background="@drawable/round"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
 

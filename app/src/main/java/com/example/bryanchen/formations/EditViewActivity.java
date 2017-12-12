@@ -4,10 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.graphics.Canvas;
 import android.view.View;
@@ -17,9 +21,11 @@ import android.widget.Toast;
 
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.savvisingh.colorpickerdialog.ColorPickerDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static java.lang.Math.min;
 
@@ -71,19 +77,32 @@ public class EditViewActivity extends AppCompatActivity {
         Button doneButton = (Button) findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
-                Intent data = new Intent();
-                clearDots();
-//                offsetDots(dots, true);
-                data.putParcelableArrayListExtra("DOTS", dots);
-                data.putParcelableArrayListExtra("DELETED", deleted);
-                setResult(RESULT_OK, data);
-                finish();
+                endSession();
             }
         });
 
     }
 
+    // takes care of back button
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) // Press Back Icon
+        {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void endSession() {
+        Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
+        Intent data = new Intent();
+        clearDots();
+//                offsetDots(dots, true);
+        data.putParcelableArrayListExtra("DOTS", dots);
+        data.putParcelableArrayListExtra("DELETED", deleted);
+        setResult(RESULT_OK, data);
+        finish();
+    }
     // unselects all dots
     public void clearDots() {
         for (Dot i : dots) {
@@ -102,6 +121,7 @@ public class EditViewActivity extends AppCompatActivity {
         private Paint selectPaint = new Paint();
         private Paint textPaint = new Paint();
         Dot selectedDot = null;
+        List<Dot> multiselect = new ArrayList<>();
         private float mDownX;
         private float mDownY;
         private final float SCROLL_THRESHOLD = 10;
@@ -112,32 +132,61 @@ public class EditViewActivity extends AppCompatActivity {
             super(context);
             editPeople.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    // create dialog to rename and recolor
-                    ColorDialogExtended dialog = ColorDialogExtended.newInstance(
-                            ColorDialogExtended.SELECTION_SINGLE,
-                            closestColorsList,
-                            5, // Number of columns
-                            ColorDialogExtended.SIZE_SMALL, selectedDot.getName(), selectedDot.getColor());
+//                    if(multiselect.size() == 0) {
+                        // create dialog to rename and recolor
+                        ColorDialogExtended dialog = ColorDialogExtended.newInstance(
+                                ColorDialogExtended.SELECTION_SINGLE,
+                                closestColorsList,
+                                5, // Number of columns
+                                ColorDialogExtended.SIZE_SMALL, selectedDot.getName(), selectedDot.getColor());
 
-                    dialog.show(getFragmentManager(), "some_tag");
+                        dialog.show(getFragmentManager(), "some_tag");
 
-                    dialog.setOnDialodButtonListener(new ColorDialogExtended.OnDialogButtonListener() {
-                        @Override
-                        public void onDonePressed(HashMap<String, Integer> mSelectedColors) {
-                            if (mSelectedColors.size() > 0) {
-                                for (String k : mSelectedColors.keySet()) {
-                                    if (k != "NO_NAME") {
-                                        selectedDot.setName(k);
+                        dialog.setOnDialodButtonListener(new ColorDialogExtended.OnDialogButtonListener() {
+                            @Override
+                            public void onDonePressed(HashMap<String, Integer> mSelectedColors) {
+                                if (mSelectedColors.size() > 0) {
+                                    for (String k : mSelectedColors.keySet()) {
+                                        if (k != "NO_NAME") {
+                                            selectedDot.setName(k);
+                                        }
+                                        selectedDot.setColor(mSelectedColors.get(k));
                                     }
-                                    selectedDot.setColor(mSelectedColors.get(k));
                                 }
                             }
-                        }
 
-                        @Override
-                        public void onDismiss() {
-                        }
-                    });
+                            @Override
+                            public void onDismiss() {
+                            }
+                        });
+//                    } else {
+//                        // create dialog to rename and recolor
+//                        ColorPickerDialog dialog = ColorPickerDialog.newInstance(
+//                                ColorDialogExtended.SELECTION_SINGLE,
+//                                closestColorsList,
+//                                5, // Number of columns
+//                                ColorDialogExtended.SIZE_SMALL);
+//
+//                        dialog.show(getFragmentManager(), "some_tag");
+//
+//                        dialog.setOnDialodButtonListener(new ColorPickerDialog.OnDialogButtonListener() {
+//                            @Override
+//                            public void onDonePressed(HashMap<String, Integer> mSelectedColors) {
+//                                if (mSelectedColors.size() > 0) {
+//                                    for (String k : mSelectedColors.keySet()) {
+//                                        if (k != "NO_NAME") {
+//                                            selectedDot.setName(k);
+//                                        }
+//                                        selectedDot.setColor(mSelectedColors.get(k));
+//                                    }
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onDismiss() {
+//                            }
+//                        });
+//                    }
                 }
             });
         }
@@ -167,18 +216,14 @@ public class EditViewActivity extends AppCompatActivity {
             // drawing dots
             for (Dot p : dots) {
                 paint.setColor(p.getColor());
-//                int size = p.getName().length();
-//                if (size > 0) {
-//                    textPaint.setTextSize(26 - 3 * size / 4);
-//                } else {
                 textPaint.setTextSize(30);
-//                }
+                textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
                 if (p.isSelected()) {
                     editPeople.setVisibility(VISIBLE);
                     selectedDot = p;
                     selectPaint.setColor(p.getColor());
-                    selectPaint.setShadowLayer((float)p.getDiameter()+100, p.getX()+lefty, p.getY()+topy, Color.LTGRAY);
-                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter() + 10, selectPaint);
+                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter() + 15, selectPaint);
                 } else {
                     canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter(), paint);
                 }
@@ -280,6 +325,7 @@ public class EditViewActivity extends AppCompatActivity {
 
 //                        db.collection("User1").document("Fragments").
 
+                        editPeople.setVisibility(GONE);
                     }
                     isMoving = false;
                     break;

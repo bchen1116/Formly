@@ -14,8 +14,8 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:textColor="@color/colorPrimary"
@@ -35,22 +35,17 @@
         android:layout_below="@id/title"
         android:layout_toRightOf="@+id/pages"
         android:text=" pages"
-        android:textColor="@color/iguana" />
+        android:textColor="@color/iguana"
+        android:id="@+id/textView" />
 
     <ImageView
-        android:layout_width="360dp"
-        android:layout_height="360dp"
-        android:id="@+id/QRview"
-        android:src = "@drawable/logo"
-        android:layout_gravity="center"
-        android:visibility="gone"/>
-
-    <ImageButton
+        android:id="@+id/QRbutton"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:src="@color/iguana"
-        android:id="@+id/QRbutton"/>
+        android:layout_alignBottom="@+id/title"
+        android:layout_alignTop="@+id/title"
+        android:layout_alignParentEnd="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/logo" />
 
 </RelativeLayout>
