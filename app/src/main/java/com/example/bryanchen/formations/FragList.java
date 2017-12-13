@@ -17,6 +17,7 @@ public class FragList implements Parcelable {
     public List<Fragment> slides;
     public List<DotList> fragList = new ArrayList<>();
     public String activityName;
+    public int numFrags;
 
     // initialize a FragList object
     public FragList(String name, ArrayList<Fragment> frags) {
@@ -28,6 +29,11 @@ public class FragList implements Parcelable {
             this.fragList.add(dottie);
         }
         this.activityName = name;
+    }
+
+    public FragList(String name, int numFrags) {
+        this.activityName = name;
+        this.numFrags = numFrags;
     }
 
     // initialize a FragList object with a parcel

@@ -51,6 +51,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 // page that contains all of the different formations
 public class StartPage extends AppCompatActivity {
@@ -61,6 +62,7 @@ public class StartPage extends AppCompatActivity {
     public int numLoadedFrags = 0;
     private int GET_MAIN_REQUEST = 15;
     private ArrayList<FragList> mains = new ArrayList<>();
+    private List<String> formationNames = new ArrayList<>();
     private RecyclerView recycle;
     private formationsAdapter mAdapter;
     private TextView emptyView;
@@ -72,6 +74,25 @@ public class StartPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
+
+        try {
+            StringList cheese = getIntent().getExtras().getParcelable("Formation Names");
+            formationNames = cheese.strings;
+        } catch (Exception e) {
+
+        }
+
+        for (String name : formationNames) {
+            db.collection("Users").document(auth.getUid()).collection(name + " " + auth.getUid()).document("Num Frags")
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            documentSnapshot.get("num");
+                        }
+                    });
+        }
+
 
         db.collection("User1").document("Num Frags")
             .get()
@@ -256,6 +277,24 @@ public class StartPage extends AppCompatActivity {
 
 
             mains.add(0, f);
+
+            List<String> tempNames = new ArrayList<>();
+            for (int i = 0; i < mains.size(); i++) {
+                tempNames.add(mains.get(i).activityName);
+            }
+            formationNames = tempNames;
+            Map<String, List<String>> namesMap = new HashMap<>();
+            namesMap.put("list", formationNames);
+
+            db.collection("Users").document(auth.getUid()).collection("Formation List").document("lol")
+                    .set(namesMap)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d("FORMATIONS NAMES", "added");
+                        }
+                    });
+
             mAdapter.notifyDataSetChanged();
         } else if (requestCode == CAMERACODE && resultCode == RESULT_OK) {
             Log.e("WE COOL", data.getExtras().getString("work"));
