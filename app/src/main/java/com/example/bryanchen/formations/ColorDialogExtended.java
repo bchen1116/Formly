@@ -6,13 +6,16 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.widget.SwitchCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.savvisingh.colorpickerdialog.ColorPickerDialog;
 import com.savvisingh.colorpickerdialog.ColorPickerPalette;
@@ -49,6 +52,7 @@ public class ColorDialogExtended extends ColorPickerDialog{
     protected int mSize;
     protected String name;
     protected int color;
+    protected boolean dotSize;
 
     public HashMap<String, Integer> result = new HashMap<>();
 
@@ -64,21 +68,21 @@ public class ColorDialogExtended extends ColorPickerDialog{
     }
 
     public static ColorDialogExtended newInstance(int mSelectionType, ArrayList<Integer> colors,
-                                                int columns, int size, String name, int color) {
+                                                int columns, int size, String name, int color, boolean isLarge) {
 
         ColorDialogExtended ret = new ColorDialogExtended();
-        ret.initialize(mSelectionType, colors, columns, size, name, color);
+        ret.initialize(mSelectionType, colors, columns, size, name, color, isLarge);
         return ret;
     }
 
-    public void initialize(int selectionType, ArrayList<Integer> colors, int columns, int size, String name, int color) {
+    public void initialize(int selectionType, ArrayList<Integer> colors, int columns, int size, String name, int color, boolean isLarge) {
 
         mSelectedColor = new ArrayList<>();
         setArguments(selectionType, columns, size);
         setColors(colors);
         this.name = name;
         this.color = color;
-
+        this.dotSize = isLarge;
     }
 
     public void setArguments(int selectionType, int columns, int size) {
@@ -130,6 +134,14 @@ public class ColorDialogExtended extends ColorPickerDialog{
         l.addView(input);
         View view = LayoutInflater.from(getActivity()).inflate(com.savvisingh.colorpickerdialog.R.layout.color_picker_dialog, null);
         l.addView(view);
+        TextView setSizeText = new TextView(getActivity());
+        setSizeText.setText("Change dot size");
+        l.addView(setSizeText);
+        ToggleButton toggle = new ToggleButton(getActivity());
+        toggle.setTextOff("Large");
+        toggle.setTextOn("Small");
+        toggle.setChecked(dotSize);
+        l.addView(toggle);
         l.setGravity(View.TEXT_ALIGNMENT_CENTER);
         mProgress = (ProgressBar) view.findViewById(android.R.id.progress);
         mPalette = (ColorPickerPalette) view.findViewById(com.savvisingh.colorpickerdialog.R.id.color_picker);
@@ -148,18 +160,21 @@ public class ColorDialogExtended extends ColorPickerDialog{
                         if (input.getText().toString() != getName()) {
                             setName(input.getText().toString());
                         }
+                        if (toggle.isChecked()) {
+                            dotSize = true;
+                        }
                         if(mListener!=null) {
                             if (getName() != null){
                                 if (mSelectedColor.size()>0) {
-                                    result.put(getName(), mSelectedColor.get(0));
+                                    result.put(getName()+getSize(), mSelectedColor.get(0));
                                 } else {
-                                    result.put(getName(), getColor());
+                                    result.put(getName()+getSize(), getColor());
                                 }
                             } else {
                                 if (mSelectedColor.size()>0) {
-                                    result.put("NO_NAME", mSelectedColor.get(0));
+                                    result.put("NO_NAME"+getSize(), mSelectedColor.get(0));
                                 } else {
-                                    result.put("NO_NAME", getColor());
+                                    result.put("NO_NAME"+getSize(), getColor());
                                 }
                             }
                             mListener.onDonePressed(result);
@@ -234,6 +249,8 @@ public class ColorDialogExtended extends ColorPickerDialog{
     }
 
     public String getName() {return this.name; }
+
+    public int getSize() {return (this.dotSize)? 1 : 0;}
 
     public void setName(String name) { this.name = name;}
 

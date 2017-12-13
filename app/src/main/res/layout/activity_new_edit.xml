@@ -1,13 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/editLayout"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    tools:context="com.example.bryanchen.formations.EditViewActivity">
+    tools:context="com.example.bryanchen.formations.NewEdit">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+        <Switch
+            android:id="@+id/grid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:checked="false"
+            android:layout_gravity="right"
+            app:layout_constraintRight_toRightOf="@id/toolbar"
+            app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include layout="@layout/content_new_edit" />
 
     <GridLayout
         android:id="@+id/editGrid"
@@ -30,12 +54,13 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="-104dp"
-        android:padding="10dp"
-        android:text="Edit Dancer"
         android:background="@drawable/round"
+        android:padding="10dp"
+        android:text="Edit"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
+
 
     <Button
         android:id="@+id/doneButton"
@@ -44,9 +69,9 @@
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="2dp"
         android:layout_marginStart="2dp"
-        android:padding="10dp"
-        android:text="Finished Editing"
         android:background="@drawable/round"
+        android:padding="10dp"
+        android:text="Done"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
 

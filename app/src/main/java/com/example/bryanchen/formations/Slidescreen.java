@@ -32,7 +32,6 @@ public class Slidescreen extends Fragment{
     ViewGroup rootView;
     drawView s;
     private String comments="";
-    //    static final int EDIT_DOTS_REQUEST = 12;
     MotionEvent e;
     boolean hasMotion;
     // class member variable to save the X,Y coordinates
@@ -51,7 +50,6 @@ public class Slidescreen extends Fragment{
                 R.layout.fragment_slidescreen, container, false);
 
         s = new drawView(getActivity());
-//        inputEdit = new EditText(getActivity());
 
         // the purpose of the touch listener is just to store the touch X,Y coordinates
         s.setOnTouchListener(new View.OnTouchListener() {
@@ -64,7 +62,6 @@ public class Slidescreen extends Fragment{
                     lastTouchDownXY[1] = event.getY();
                 }
                 // let the touch event pass on to whoever needs it
-//                comments = inputEdit.getText().toString();
                 return false;
             }
         });
@@ -89,7 +86,7 @@ public class Slidescreen extends Fragment{
                     }
                 }
                 if (inRange(x, y)) {
-                    Intent goingToEdit = new Intent(getActivity(), EditViewActivity.class);
+                    Intent goingToEdit = new Intent(getActivity(), NewEdit.class);
                     goingToEdit.putParcelableArrayListExtra("DOTS", (ArrayList) dots);
                     getActivity().startActivityForResult(goingToEdit, MainActivity.EDIT_DOTS_REQUEST);
                 }
@@ -98,17 +95,7 @@ public class Slidescreen extends Fragment{
         });
 
         ViewGroup linear = (ViewGroup) rootView.findViewById(R.id.linear);
-//        final LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
-//        inputEdit.setLayoutParams(lparams);
-//        inputEdit.setHint("Comments:");
-
         linear.addView(s);
-//        linear.addView(inputEdit);
-//        if (comments.equals("")) {
-//            comments = inputEdit.getText().toString();
-//        } else {
-//            inputEdit.setText(this.comments);
-//        }
         return rootView;
     }
 

@@ -33,6 +33,7 @@ public class Dot implements Parcelable{
     public int color;
     private double diameter;
     private final double DEFAULT_DIAMETER = 40;
+    private final double LARGE_DIAMETER = 55;
     private boolean selected;
 
     // initializes the dot object at location x, y
@@ -135,8 +136,8 @@ public class Dot implements Parcelable{
     }
 
     // sets the diameter of the dot
-    public void setDiameter(double diam) {
-        this.diameter = diam;
+    public void setDiameter() {
+        this.diameter = LARGE_DIAMETER;
     }
 
     // resets the diameter of the dot
@@ -176,6 +177,9 @@ public class Dot implements Parcelable{
 
     // returns the unique ID of the dot
     public Long getID() {return this.id; }
+
+    // returns if the dot is large
+    public boolean isLarge() {return (getDiameter() == LARGE_DIAMETER);}
 
     // returns if the dot is selected
     public boolean isSelected() { return this.selected;}

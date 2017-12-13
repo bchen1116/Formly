@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.text.Editable;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +29,6 @@ public class DotList implements Parcelable {
             this.dotList = dots;
             this.pageNumber = num;
             this.comment = edit;
-            Log.e("order dotlist", ""+pageNumber);
         }
 
         // creates a DotList obj from a parcel

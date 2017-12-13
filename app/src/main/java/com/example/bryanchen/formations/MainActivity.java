@@ -1,5 +1,6 @@
 package com.example.bryanchen.formations;
 
+import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     public TextView pageNumbers;
     private ViewPager.OnPageChangeListener onPageChangeListener;
     private FloatingActionButton deletePage, comments;
+    private InputMethodManager imm;
 
     // Initializes the mainActivity
     @Override
@@ -102,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
         // checks if there exists a bundle. Loads data if there is
         if (b != null) {
-            Log.e("we has stuff", "load it");
             className = b.getString("name");
             List<DotList> dlists = b.getParcelableArrayList("dotlists");
             for (int i = 0; i < dlists.size(); i++) {
@@ -281,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
                 Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(page);
                 String commentary = s.getComments();
                 etInput.setText(commentary);
-
+                etInput.requestFocus();
                 tvMessage.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
                 tvMessage.setText("Comments: ");
                 layout.setOrientation(LinearLayout.VERTICAL);
@@ -289,15 +291,19 @@ public class MainActivity extends AppCompatActivity {
                 layout.addView(etInput);
                 layout.setPadding(50, 40, 50, 10);
 
+                imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
                 builder.setView(layout);
 
                 // cancel
                 builder.setNegativeButton("Cancel", (dialog, which) -> {
+                    imm.hideSoftInputFromWindow(etInput.getWindowToken(), 0);
                     dialog.cancel();
                 });
 
                 // if ok is pressed, creates a new formation
                 builder.setPositiveButton("Done", (dialog, which) -> {
+                    imm.hideSoftInputFromWindow(etInput.getWindowToken(), 0);
                     String com = etInput.getText().toString();
                     s.setComments(com);
                     s.updateComments();
@@ -306,21 +312,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-//    private void setupToolbar(){
-//        Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//        ActionBar actionBar=getSupportActionBar();
-//        actionBar.setDisplayHomeAsUpEnabled(true);
-//        actionBar.setDisplayShowHomeEnabled(true);
-//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.e("we here", "yas");
-//                endSession();
-//            }
-//        });
-//    }
 
     @Override
     public void onResume() {
@@ -366,8 +357,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Slidescreen f = (Slidescreen)myAdapter.getCurrentFrag(mViewPager.getCurrentItem());
-//                Log.e("Page: ", "" + f.getPage());
-//                Log.d("frame", "id: " + f.getId() + ", page: " + f.page + ", int: " + f.getInt() + ", getpage: " + f.getPage());
                 f.setDots(dots);
                 int fragNumInt = 0;
 
@@ -540,13 +529,6 @@ public class MainActivity extends AppCompatActivity {
         // gets the position for the object
         @Override
         public int getItemPosition(Object obj) {
-//            Slidescreen o = (Slidescreen) obj;
-//            for (int i = 0; i < getCount(); i++) {
-//                Slidescreen s = (Slidescreen) mlist.get(i);
-//                if s.isEqual(o)) {
-//                    return i;
-//                }
-//            }
             return POSITION_NONE;
         }
 
@@ -579,7 +561,6 @@ public class MainActivity extends AppCompatActivity {
     // ends the MainActivity session
     public void endSession() {
         FragList result = new FragList(this.className, this.myAdapter.getFragment());
-        Log.d("FRAGLIST", this.className + " " + this.myAdapter.getFragment().toString() + ", " + result.getDots());
         Intent finishing = new Intent();
         finishing.putExtra("FINAL", result);
         finishing.putExtra("Formation Name", this.className);

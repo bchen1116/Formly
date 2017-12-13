@@ -1,6 +1,8 @@
 package com.example.bryanchen.formations;
 
 import android.support.v4.app.Fragment;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -14,11 +16,13 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -31,9 +35,6 @@ import com.firebase.ui.auth.ResultCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -66,6 +67,7 @@ public class StartPage extends AppCompatActivity {
     private TextView emptyView;
     String name = "";
     private final int CAMERACODE = 5;
+    private InputMethodManager imm;
 
     // creates the StartPage
     @Override
@@ -74,42 +76,44 @@ public class StartPage extends AppCompatActivity {
         setContentView(R.layout.activity_start_page);
 
         db.collection("User1").document("Num Frags")
-            .get()
-            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            Log.d("LOAD", "DocumentSnapshot data: Number of Fragments: " + task.getResult().getData());
-                            Long loadedNum = (Long) document.getData().get("num");
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                Log.d("LOAD", "DocumentSnapshot data: Number of Fragments: " + task.getResult().getData());
+                                Long loadedNum = (Long) document.getData().get("num");
 
-                            Thread t = new Thread() {
-                                public void run() {
-                                    updateNumFrags(loadedNum.intValue());
+                                Thread t = new Thread() {
+                                    public void run() {
+                                        updateNumFrags(loadedNum.intValue());
+                                    }
+                                };
+
+                                t.start();
+                                try {
+                                    t.join();
+                                } catch (InterruptedException ie) {
+                                    //Log message if required.
                                 }
-                            };
-
-                            t.start();
-                            try {
-                                t.join();
-                            } catch(InterruptedException ie) {
-                                //Log message if required.
+                            } else {
+                                Log.d("ERROR", "No such document");
                             }
                         } else {
-                            Log.d("ERROR", "No such document");
+                            Log.d("FAIL", "get failed with ", task.getException());
                         }
-                    } else {
-                        Log.d("FAIL", "get failed with ", task.getException());
                     }
-                }
-            });
-        
+                });
+
         // add button to add a new formation
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
                 createAndDisplayDialog();
             }
         });
@@ -121,7 +125,7 @@ public class StartPage extends AppCompatActivity {
         camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent cameraIntent = new Intent(StartPage.this, Camera.class);
+                Intent cameraIntent = new Intent(StartPage.this, QrCodeScannerActivity.class);
                 startActivityForResult(cameraIntent, CAMERACODE);
             }
         });
@@ -140,20 +144,15 @@ public class StartPage extends AppCompatActivity {
                 startActivityForResult(mainIntent, GET_MAIN_REQUEST);
             }
         }, mains);
-        if (mains.isEmpty()) {
-            recycle.setVisibility(View.GONE);
-            emptyView.setVisibility(View.VISIBLE);
-        }
-        else {
-            recycle.setVisibility(View.VISIBLE);
-            emptyView.setVisibility(View.GONE);
-        }
+        checkMain();
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recycle.getBackground().setAlpha(25);
         recycle.setLayoutManager(mLayoutManager);
         recycle.setItemAnimator(new DefaultItemAnimator());
         recycle.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recycle.setAdapter(mAdapter);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recycle);
     }
 
     // updates the number of loaded frags
@@ -171,6 +170,8 @@ public class StartPage extends AppCompatActivity {
         tvMessage.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         tvMessage.setText("Formation name: ");
         etInput.setSingleLine();
+        etInput.requestFocus();
+
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.addView(tvMessage);
         layout.addView(etInput);
@@ -180,18 +181,19 @@ public class StartPage extends AppCompatActivity {
 
         // cancel
         builder.setNegativeButton("Cancel", (dialog, which) -> {
+            imm.hideSoftInputFromWindow(etInput.getWindowToken(), 0);
             dialog.cancel();
         });
 
         // if ok is pressed, creates a new formation
         builder.setPositiveButton("Done", (dialog, which) -> {
+            imm.hideSoftInputFromWindow(etInput.getWindowToken(), 0);
             name = etInput.getText().toString();
             if (!hasName(name)) {
                 Toast.makeText(getApplicationContext(), "This formation name already exists!", Toast.LENGTH_SHORT).show();
-            } else if(name.length() == 0) {
+            } else if (name.length() == 0) {
                 Toast.makeText(getApplicationContext(), "Needs a name!", Toast.LENGTH_SHORT).show();
-            }
-            else {
+            } else {
                 Toast.makeText(StartPage.this, "Creating new formations", Toast.LENGTH_SHORT).show();
                 Intent creatingIntent = new Intent(getApplicationContext(), MainActivity.class);
                 creatingIntent.putExtra("ActivityName", name);
@@ -199,8 +201,33 @@ public class StartPage extends AppCompatActivity {
                 startActivityForResult(creatingIntent, GET_MAIN_REQUEST);
             }
         });
-
         builder.create().show();
+    }
+
+    // removes item
+    public void removeItem(int position) {
+        mains.remove(position);
+    }
+
+    // checks if list of Formations is empty
+    public void checkMain() {
+        if (mains.isEmpty()) {
+            recycle.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        } else {
+            recycle.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+        }
+    }
+
+    // checks if the new name exists in the current list of formations
+    private boolean hasName(String name) {
+        for (int i = 0; i < mains.size(); i++) {
+            if (mains.get(i).getActivityName().equals(name)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // adds the formation if it's new, otherwise updates it
@@ -263,24 +290,35 @@ public class StartPage extends AppCompatActivity {
 
     }
 
-    // checks if the new name exists in the current list of formations
-    private boolean hasName(String name) {
-        for (int i = 0; i<mains.size(); i++) {
-            if (mains.get(i).getActivityName().equals(name)){
-                return false;
-            }
+    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
         }
-        return true;
-    }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        FirebaseAuth.getInstance().signOut();
-    }
+        @Override
+        public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
+            final int position = viewHolder.getAdapterPosition(); //swiped position
 
-//    public void setQR() {
-//        QRshow.setImageDrawable(getResources().getDrawable(R.drawable.ic_logo));
-//        QRshow.setVisibility(View.VISIBLE);
+            if (direction == ItemTouchHelper.LEFT) { //swipe left
+                removeItem(position);
+                Log.e("Mains delete", ""+mains.size());
+                mAdapter.notifyItemRemoved(position);
+                Toast.makeText(getApplicationContext(),"Swiped to left",Toast.LENGTH_SHORT).show();
+            } else if (direction == ItemTouchHelper.RIGHT) { //swipe right
+                removeItem(position);
+                Log.e("Mains delete", ""+mains.size());
+                mAdapter.notifyItemRemoved(position);
+                Toast.makeText(getApplicationContext(),"Swiped to right",Toast.LENGTH_SHORT).show();
+            }
+            checkMain();
+        }
+    };
+
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        FirebaseAuth.getInstance().signOut();
 //    }
 }
+

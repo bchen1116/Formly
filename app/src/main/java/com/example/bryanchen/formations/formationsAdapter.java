@@ -16,7 +16,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -43,8 +46,6 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     private Context c;
     private int WIDTH = 500;
 
-//    private OnItemClicked mListener;
-
     // class for entry
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, pages;
@@ -53,11 +54,14 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
         // initializes the entry
         public MyViewHolder(View view) {
             super(view);
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             title = (TextView) view.findViewById(R.id.title);
             pages = (TextView) view.findViewById(R.id.pages);
             getQR = (ImageView) view.findViewById(R.id.QRbutton);
+            String usage = user.getUid().toString()+title.toString();
             try {
-                Bitmap bitmap = encodeAsBitmap("HI THERE");
+                Bitmap bitmap = encodeAsBitmap(usage);
+                Log.e("MAKING BITMAP CODE", usage);
                 getQR.setImageBitmap(bitmap);
             } catch (WriterException e) {
                 e.printStackTrace();
@@ -124,14 +128,14 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
         holder.getQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("CLICKED", "YAY");
                 ImageView image = new ImageView(v.getContext());
                 ImageView org = (ImageView) holder.getQR;
                 // Copy drawable of that image
                 image.setImageDrawable(org.getDrawable());
                 // Copy Background of that image
                 image.setBackground(org.getBackground());
-
+                image.setMinimumWidth(800);
+                image.setMinimumHeight(800);
                 AlertDialog.Builder builder =
                         new AlertDialog.Builder(v.getContext()).
                                 setMessage("QR code").
