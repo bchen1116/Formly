@@ -31,6 +31,13 @@ public class FragList implements Parcelable {
         this.activityName = name;
     }
 
+    // used for loading
+    public FragList(String name, List<DotList> dotLists, boolean b) {
+        this.activityName = name;
+        this.fragList = dotLists;
+        Log.d("shit", name + " " + dotLists.size());
+    }
+
     public FragList(String name, int numFrags) {
         this.activityName = name;
         this.numFrags = numFrags;

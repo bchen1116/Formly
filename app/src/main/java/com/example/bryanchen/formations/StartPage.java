@@ -80,25 +80,29 @@ public class StartPage extends AppCompatActivity {
         setContentView(R.layout.activity_start_page);
 
         try {
-            StringList cheese = getIntent().getExtras().getParcelable("Formation Names");
-            formationNames = cheese.strings;
+            ArrayList<FragList> tempFrags = getIntent().getParcelableArrayListExtra("fragLists");
+            mains = tempFrags;
+            Log.d("mains", mains.toString());
+            checkMain();
+            mAdapter.notifyDataSetChanged();
+
         } catch (Exception e) {
 
         }
 
-        for (String name : formationNames) {
-            db.collection("Users").document(auth.getUid()).collection(name + " " + auth.getUid()).document("Num Frags")
-                    .get()
-                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            Long numFrags = (Long) documentSnapshot.get("num");
-                            mains.add(new FragList(name, numFrags.intValue()));
-                            checkMain();
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    });
-        }
+//        for (String name : formationNames) {
+//            db.collection("Users").document(auth.getUid()).collection(name + " " + auth.getUid()).document("Num Frags")
+//                    .get()
+//                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//                        @Override
+//                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+//                            Long numFrags = (Long) documentSnapshot.get("num");
+//                            mains.add(new FragList(name, numFrags.intValue()));
+//                            checkMain();
+//                            mAdapter.notifyDataSetChanged();
+//                        }
+//                    });
+//        }
 
 
         db.collection("User1").document("Num Frags")
