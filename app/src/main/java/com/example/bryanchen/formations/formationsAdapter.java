@@ -16,7 +16,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -42,8 +45,7 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     private final String p = " pages";
     private Context c;
     private int WIDTH = 500;
-
-//    private OnItemClicked mListener;
+    private final String form = "/formations/";
 
     // class for entry
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -56,12 +58,7 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
             title = (TextView) view.findViewById(R.id.title);
             pages = (TextView) view.findViewById(R.id.pages);
             getQR = (ImageView) view.findViewById(R.id.QRbutton);
-            try {
-                Bitmap bitmap = encodeAsBitmap("HI THERE");
-                getQR.setImageBitmap(bitmap);
-            } catch (WriterException e) {
-                e.printStackTrace();
-            }
+
         }
     }
 
@@ -113,8 +110,17 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         FragList frag = fragLists.get(position);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         holder.title.setText(frag.getActivityName());
         holder.pages.setText(String.valueOf(frag.describeContents()));
+        String usage = user.getUid().toString()+form+frag.getActivityName();
+        try {
+            Bitmap bitmap = encodeAsBitmap(usage);
+            Log.e("MAKING BITMAP CODE", usage);
+            holder.getQR.setImageBitmap(bitmap);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
         holder.title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,14 +130,14 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
         holder.getQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("CLICKED", "YAY");
                 ImageView image = new ImageView(v.getContext());
                 ImageView org = (ImageView) holder.getQR;
                 // Copy drawable of that image
                 image.setImageDrawable(org.getDrawable());
                 // Copy Background of that image
                 image.setBackground(org.getBackground());
-
+                image.setMinimumWidth(800);
+                image.setMinimumHeight(800);
                 AlertDialog.Builder builder =
                         new AlertDialog.Builder(v.getContext()).
                                 setMessage("QR code").

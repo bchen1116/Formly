@@ -17,7 +17,12 @@ import android.graphics.Canvas;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,7 +34,7 @@ import java.util.List;
 
 import static java.lang.Math.min;
 
-public class EditViewActivity extends AppCompatActivity {
+public class NewEdit extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     ArrayList<Dot> dots = new ArrayList<>();
     ArrayList<Dot> deleted = new ArrayList<>();
@@ -40,6 +45,7 @@ public class EditViewActivity extends AppCompatActivity {
     private Button editPeople;
     private ArrayList<Integer> closestColorsList = new ArrayList<>();
     float lefty, topy, righty, bottomy;
+    private boolean isGrid;
 
     // creates editViewActivity
     @Override
@@ -60,18 +66,42 @@ public class EditViewActivity extends AppCompatActivity {
             dots = getIntent().getParcelableArrayListExtra("DOTS");
         }
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_view);
+        setContentView(R.layout.activity_new_edit);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Edit Mode");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
+        Switch gridView = findViewById(R.id.grid);
+        isGrid = gridView.isChecked();
+        gridView.setText("Grid");
+        gridView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isGrid = !isGrid;
+                if (isGrid) {
+                    Toast.makeText(getApplicationContext(), "Make grid", Toast.LENGTH_SHORT).show();
+                    makeGridLayout();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Don't make grid", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         editPeople = (Button) findViewById(R.id.editDancer);
 
-        // create a viewGroup to use SingleTouchEventView on the activity_edit_view.xml
+        // create a viewGroup to use SingleTouchEventView on the activity_new_edit.xml
         ViewGroup mainView = (ViewGroup) findViewById(R.id.editLayout);
 
         // overlay the touchView on this xml
         SingleTouchEventView touch = new SingleTouchEventView(this.getApplicationContext());
         mainView.addView(touch);
-
 
         // exit on done button
         Button doneButton = (Button) findViewById(R.id.doneButton);
@@ -97,7 +127,6 @@ public class EditViewActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "Exiting add mode", Toast.LENGTH_SHORT).show();
         Intent data = new Intent();
         clearDots();
-//                offsetDots(dots, true);
         data.putParcelableArrayListExtra("DOTS", dots);
         data.putParcelableArrayListExtra("DELETED", deleted);
         setResult(RESULT_OK, data);
@@ -110,6 +139,17 @@ public class EditViewActivity extends AppCompatActivity {
         }
     }
 
+    // makes it into grid layout
+    public void makeGridLayout() {
+        for (Dot i: this.dots) {
+            i.setLocation(125*(float)Math.round(i.getX()/(double)125), 125*(float)Math.round(i.getY()/(double)125));
+        }
+    }
+
+    // sets it in grid layout
+    public void dropGrid(Dot i) {
+        i.setLocation(125*(float)Math.round(i.getX()/(double)125), 125*(float)Math.round(i.getY()/(double)125));
+    }
     // auto-generated saver
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -133,60 +173,39 @@ public class EditViewActivity extends AppCompatActivity {
             editPeople.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
 //                    if(multiselect.size() == 0) {
-                        // create dialog to rename and recolor
-                        ColorDialogExtended dialog = ColorDialogExtended.newInstance(
-                                ColorDialogExtended.SELECTION_SINGLE,
-                                closestColorsList,
-                                5, // Number of columns
-                                ColorDialogExtended.SIZE_SMALL, selectedDot.getName(), selectedDot.getColor());
+                    // create dialog to rename and recolor
+                    ColorDialogExtended dialog = ColorDialogExtended.newInstance(
+                            ColorDialogExtended.SELECTION_SINGLE,
+                            closestColorsList,
+                            5, // Number of columns
+                            ColorDialogExtended.SIZE_SMALL, selectedDot.getName(), selectedDot.getColor(), selectedDot.isLarge());
 
-                        dialog.show(getFragmentManager(), "some_tag");
+                    dialog.show(getFragmentManager(), "some_tag");
 
-                        dialog.setOnDialodButtonListener(new ColorDialogExtended.OnDialogButtonListener() {
-                            @Override
-                            public void onDonePressed(HashMap<String, Integer> mSelectedColors) {
-                                if (mSelectedColors.size() > 0) {
-                                    for (String k : mSelectedColors.keySet()) {
-                                        if (k != "NO_NAME") {
-                                            selectedDot.setName(k);
-                                        }
-                                        selectedDot.setColor(mSelectedColors.get(k));
+                    dialog.setOnDialodButtonListener(new ColorDialogExtended.OnDialogButtonListener() {
+                        @Override
+                        public void onDonePressed(HashMap<String, Integer> mSelectedColors) {
+                            if (mSelectedColors.size() > 0) {
+                                for (String k : mSelectedColors.keySet()) {
+                                    String name = k.substring(0, k.length()-1);
+                                    int sizeChange = Integer.valueOf(k.substring(k.length()-1));
+                                    if (name != "NO_NAME") {
+                                        selectedDot.setName(name);
+                                    }
+                                    selectedDot.setColor(mSelectedColors.get(k));
+                                    if (sizeChange == 1) {
+                                        selectedDot.setDiameter();
+                                    } else {
+                                        selectedDot.setDefaultDiameter();
                                     }
                                 }
                             }
+                        }
 
-                            @Override
-                            public void onDismiss() {
-                            }
-                        });
-//                    } else {
-//                        // create dialog to rename and recolor
-//                        ColorPickerDialog dialog = ColorPickerDialog.newInstance(
-//                                ColorDialogExtended.SELECTION_SINGLE,
-//                                closestColorsList,
-//                                5, // Number of columns
-//                                ColorDialogExtended.SIZE_SMALL);
-//
-//                        dialog.show(getFragmentManager(), "some_tag");
-//
-//                        dialog.setOnDialodButtonListener(new ColorPickerDialog.OnDialogButtonListener() {
-//                            @Override
-//                            public void onDonePressed(HashMap<String, Integer> mSelectedColors) {
-//                                if (mSelectedColors.size() > 0) {
-//                                    for (String k : mSelectedColors.keySet()) {
-//                                        if (k != "NO_NAME") {
-//                                            selectedDot.setName(k);
-//                                        }
-//                                        selectedDot.setColor(mSelectedColors.get(k));
-//                                    }
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onDismiss() {
-//                            }
-//                        });
-//                    }
+                        @Override
+                        public void onDismiss() {
+                        }
+                    });
                 }
             });
         }
@@ -212,6 +231,9 @@ public class EditViewActivity extends AppCompatActivity {
             selectPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             textPaint.setColor(Color.BLACK);
             textPaint.setTextAlign(Paint.Align.CENTER);
+            Paint outline = new Paint();
+            outline.setStyle(Paint.Style.FILL);
+            outline.setColor(Color.WHITE);
 
             // drawing dots
             for (Dot p : dots) {
@@ -223,7 +245,10 @@ public class EditViewActivity extends AppCompatActivity {
                     editPeople.setVisibility(VISIBLE);
                     selectedDot = p;
                     selectPaint.setColor(p.getColor());
-                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter() + 15, selectPaint);
+                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter()+20, selectPaint);
+                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter()+10, outline);
+                    canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter(), selectPaint);
+
                 } else {
                     canvas.drawCircle(p.getX()+lefty, p.getY()+topy, (float) p.getDiameter(), paint);
                 }
@@ -246,28 +271,37 @@ public class EditViewActivity extends AppCompatActivity {
             boolean occupied = false;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    isMoving = false;
-                    for (Dot d : dots) {
-                        // check if we are initially hitting a dot on down motion. If we are, we want to modify this dot
-                        if (d.isHit(event.getX()-lefty, event.getY()-topy)) {
-                            if (selectedDot != null) {
-                                selectedDot.setSelected(false);
-                            }
-                            d.setSelected(true);
-                            selectedDot = d;
-                            mDownX = event.getX();
-                            mDownY = event.getY();
-                            isOnClick = true;
+                    float x = event.getX();
+                    float y = event.getY();
+                    if (!(x < righty && x > lefty && y < bottomy && y > topy)) {
+                        try {
+                            selectedDot.setSelected(false);
+                            selectedDot = null;
+                        } catch (Exception e) {}
+                    } else {
+                        isMoving = false;
+                        for (Dot d : dots) {
+                            // check if we are initially hitting a dot on down motion. If we are, we want to modify this dot
+                            if (d.isHit(x - lefty, y - topy)) {
+                                if (selectedDot != null) {
+                                    selectedDot.setSelected(false);
+                                }
+                                d.setSelected(true);
+                                selectedDot = d;
+                                mDownX = event.getX();
+                                mDownY = event.getY();
+                                isOnClick = true;
 
-                            // the editPeople button should now come up
-                            editPeople.setVisibility(VISIBLE);
-                            break;
+                                // the editPeople button should now come up
+                                editPeople.setVisibility(VISIBLE);
+                                break;
+                            }
                         }
                     }
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    float x = event.getX();
-                    float y = event.getY();
+                    x = event.getX();
+                    y = event.getY();
                     for (Dot d : dots) {   // if we hit another dot, we cannot move this dot over it
                         if (d.isHit(x-lefty, y-topy) && d != selectedDot) {
                             occupied = true;
@@ -279,6 +313,9 @@ public class EditViewActivity extends AppCompatActivity {
                             // this makes sure that we are actually trying to move the dot, and not just touching it
                             if (isOnClick && (Math.abs(mDownX - x) > SCROLL_THRESHOLD || Math.abs(mDownY - y) > SCROLL_THRESHOLD)) {
                                 selectedDot.setLocation(x-lefty, y-topy);
+                                if (isGrid) {
+                                    dropGrid(selectedDot);
+                                }
                                 isMoving = true;
                             }
                         }
@@ -303,8 +340,14 @@ public class EditViewActivity extends AppCompatActivity {
                         if (!occupied) {
                             if (selectedDot != null) {    //if we currently hold a dot, we are dropping the dot here
                                 if (isMoving) {
-                                    selectedDot.setLocation(x-lefty, y-topy);
-                                    selectedDot.setSelected(false);
+                                    if (isGrid) {
+                                        selectedDot.setLocation(x-lefty, y-topy);
+                                        selectedDot.setSelected(false);
+                                        dropGrid(selectedDot);
+                                    } else {
+                                        selectedDot.setLocation(x - lefty, y - topy);
+                                        selectedDot.setSelected(false);
+                                    }
                                     selectedDot = null;
                                 } else {
                                     selectedDot.setSelected(false);
@@ -313,7 +356,11 @@ public class EditViewActivity extends AppCompatActivity {
                                 editPeople.setVisibility(INVISIBLE);
                                 break;
                             }
+
                             Dot p = new Dot(x-lefty, y-topy);        // otherwise, we add a new dot here
+                            if (isGrid) {
+                                dropGrid(p);
+                            }
                             dots.add(p);
                         }
                         selectedDot = null;
