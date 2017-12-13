@@ -207,6 +207,7 @@ public class StartPage extends AppCompatActivity {
     // removes item
     public void removeItem(int position) {
         mains.remove(position);
+        mAdapter.notifyItemRemoved(position);
     }
 
     // checks if list of Formations is empty

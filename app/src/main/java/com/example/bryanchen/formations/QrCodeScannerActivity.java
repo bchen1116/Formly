@@ -102,6 +102,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -134,7 +136,6 @@ public class QrCodeScannerActivity extends AppCompatActivity implements ZXingSca
     public void handleResult(Result rawResult) {
         // Do something with the result here
         Toast.makeText(getApplicationContext(), rawResult.getText(), Toast.LENGTH_SHORT).show(); // Prints scan results
-
         onBackPressed();
     }
 }

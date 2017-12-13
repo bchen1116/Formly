@@ -45,6 +45,7 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     private final String p = " pages";
     private Context c;
     private int WIDTH = 500;
+    private final String form = "/formations/";
 
     // class for entry
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -54,18 +55,10 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
         // initializes the entry
         public MyViewHolder(View view) {
             super(view);
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             title = (TextView) view.findViewById(R.id.title);
             pages = (TextView) view.findViewById(R.id.pages);
             getQR = (ImageView) view.findViewById(R.id.QRbutton);
-            String usage = user.getUid().toString()+title.toString();
-            try {
-                Bitmap bitmap = encodeAsBitmap(usage);
-                Log.e("MAKING BITMAP CODE", usage);
-                getQR.setImageBitmap(bitmap);
-            } catch (WriterException e) {
-                e.printStackTrace();
-            }
+
         }
     }
 
@@ -117,8 +110,17 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         FragList frag = fragLists.get(position);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         holder.title.setText(frag.getActivityName());
         holder.pages.setText(String.valueOf(frag.describeContents()));
+        String usage = user.getUid().toString()+form+frag.getActivityName();
+        try {
+            Bitmap bitmap = encodeAsBitmap(usage);
+            Log.e("MAKING BITMAP CODE", usage);
+            holder.getQR.setImageBitmap(bitmap);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
         holder.title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
