@@ -92,7 +92,10 @@ public class StartPage extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            documentSnapshot.get("num");
+                            Long numFrags = (Long) documentSnapshot.get("num");
+                            mains.add(new FragList(name, numFrags.intValue()));
+                            checkMain();
+                            mAdapter.notifyDataSetChanged();
                         }
                     });
         }

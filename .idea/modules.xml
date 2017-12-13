@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Formations.iml" filepath="$PROJECT_DIR$/Formations.iml" />
       <module fileurl="file://C:\Users\Guillermo\Documents\Formly\Formly\Formations.iml" filepath="C:\Users\Guillermo\Documents\Formly\Formly\Formations.iml" />
       <module fileurl="file://$PROJECT_DIR$/Formly.iml" filepath="$PROJECT_DIR$/Formly.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />

@@ -31,7 +31,7 @@ public class SplashScreen extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static int SPLASH_TIME_OUT = 1500;
     public int numLoadedFrags = 0;
-    private StringList formationNames = new StringList();
+    private List<String> formationNames = new ArrayList<>();
 
     private static final int RC_SIGN_IN = 123;
     List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -69,37 +69,14 @@ public class SplashScreen extends AppCompatActivity {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             if (documentSnapshot.get("list") != null) {
-                                String[] cheese = (String[]) documentSnapshot.get("list");
-                                formationNames = new StringList(Arrays.asList(cheese));
+                                formationNames = (List<String>) documentSnapshot.get("list");
                             }
                         }
                     });
 
 
-            db.collection(user.getUid()).document("Num Frags")
-            .get()
-            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    if (documentSnapshot.exists()) {
-                        Long temp = (Long) documentSnapshot.get("num");
-                        numLoadedFrags = temp.intValue();
-                        Log.d("existing user frags", "" + documentSnapshot.get("num"));
-                    }
-                    else {
-                        Map<String, Integer> numFrags = new HashMap<>();
-                        numFrags.put("num", 0);
-                        db.collection(user.getUid()).document("Num Frags")
-                                .set(numFrags)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Log.d("new user", "ye boi");
-                                    }
-                                });
-                    }
-                }
-            });
+
+
 
             new Handler().postDelayed(new Runnable() {
                 @Override
