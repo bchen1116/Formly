@@ -40,7 +40,19 @@ public class FragList implements Parcelable {
 
     public FragList(String name, int numFrags) {
         this.activityName = name;
+        List<Dot> dot = new ArrayList<>();
+        Dot b = new Dot(10, 10);
+        dot.add(b);
+        List<DotList> fragL = new ArrayList<DotList>();
+        fragL.add(new DotList(0, dot, ""));
         this.numFrags = numFrags;
+        this.fragList = fragL;
+    }
+
+    // used for loading
+    public FragList(String name, ArrayList<DotList> dotLists, boolean b) {
+        this.activityName = name;
+        this.fragList = dotLists;
     }
 
     // initialize a FragList object with a parcel
