@@ -45,7 +45,6 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
     private final String p = " pages";
     private Context c;
     private int WIDTH = 500;
-    private final String form = "/formations/";
 
     // class for entry
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -113,7 +112,7 @@ public class formationsAdapter extends RecyclerView.Adapter<formationsAdapter.My
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         holder.title.setText(frag.getActivityName());
         holder.pages.setText(String.valueOf(frag.describeContents()));
-        String usage = user.getUid().toString()+form+frag.getActivityName();
+        String usage = frag.getActivityName()+" "+user.getUid().toString();
         try {
             Bitmap bitmap = encodeAsBitmap(usage);
             Log.e("MAKING BITMAP CODE", usage);

@@ -106,7 +106,9 @@ public class MainActivity extends AppCompatActivity {
         // checks if there exists a bundle. Loads data if there is
         if (b != null) {
             className = b.getString("name");
+            Log.e("Did we get a classname", "yes");
             List<DotList> dlists = b.getParcelableArrayList("dotlists");
+            Log.e("is dlist anything", dlists.toString());
             for (int i = 0; i < dlists.size(); i++) {
                 Slidescreen s = new Slidescreen().newInstance(String.valueOf(i), i);
                 s.setPage(i);
@@ -114,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 s.setComments(dlists.get(i).getComment());
                 addView(s, i);
                 NUM_ITEMS++;
+                Log.e("we should've printed", "did it ");
             }
             myAdapter.notifyDataSetChanged();
             Slidescreen s = (Slidescreen) myAdapter.getCurrentFrag(0);

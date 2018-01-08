@@ -1,6 +1,7 @@
 package com.example.bryanchen.formations;
 
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -144,7 +145,7 @@ public class SplashScreen extends AppCompatActivity {
                     }
 
                 }
-            }, SPLASH_TIME_OUT*3);
+            }, SPLASH_TIME_OUT*7);
 
 
             new Handler().postDelayed(new Runnable() {
@@ -158,7 +159,7 @@ public class SplashScreen extends AppCompatActivity {
                     startActivity(startPageIntent);
                     finish();
                 }
-            }, SPLASH_TIME_OUT*4);
+            }, SPLASH_TIME_OUT*7);
         }
     }
 }
