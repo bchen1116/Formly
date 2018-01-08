@@ -132,6 +132,7 @@ public class SplashScreen extends AppCompatActivity {
                                             }
                                         }
                                     });
+
                             DotList newDotList = new DotList(i, dots, "");
                             Log.d("dot list", newDotList.toString());
                             dotLists.add(newDotList);
